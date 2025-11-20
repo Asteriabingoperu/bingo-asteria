@@ -1,1 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Asteria Perú</title>
+    <link rel="stylesheet" href="style.css">
+</head>
 
+<body>
+
+    <header>
+        <h1 class="titulo">🎉 Bingo Asteria Perú 🎉</h1>
+    </header>
+
+    <!-- Panel de números -->
+    <section id="panel-numeros"></section>
+
+    <!-- Estrellas -->
+    <div class="contenedor-estrellas">
+        <span class="estrella" id="estrella1">★</span>
+        <span class="estrella" id="estrella2">★</span>
+        <span class="estrella" id="estrella3">★</span>
+        <span class="estrella" id="estrella4">★</span>
+        <span class="estrella" id="estrella5">★</span>
+    </div>
+
+    <!-- Bola animada -->
+    <div class="sorteo-bola" id="sorteo-bola">
+        <div class="bola-luz"></div>
+        <div class="bola-numero" id="bola-numero">--</div>
+        <div class="explosion-colores"></div>
+    </div>
+
+    <!-- Modal moderno -->
+    <div id="modal" class="modal">
+        <div class="modal-contenido">
+            <h2>Número seleccionado</h2>
+            <p id="modal-numero"></p>
+            <button class="btn-cerrar" onclick="cerrarModal()">Cerrar</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
