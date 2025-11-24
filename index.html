@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Asteria Perú - Oficial</title>
+    <style>
+        /* --- ESTILOS VISUALES --- */
+        :root {
+            --azul-fondo: #001f4d;
+            --dorado: #FFD700;
+            --rojo: #D32F2F;
+            --blanco: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--azul-fondo);
+            color: var(--blanco);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* --- PANEL IZQUIERDO (BOLA Y CONTROLES) --- */
+        .panel-izquierdo {
+            width: 30%;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 20px;
+            border: 2px solid var(--dorado);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* BOLA FLOTANTE */
+        .bola-flotante-container {
+            position: relative;
+            height: 220px;
+            margin: 0 auto;
+        }
+
+        .bola-imagen {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            animation: flotar 3s infinite ease-in-out;
+            filter: drop-shadow(0 0 20px rgba(255, 69, 0, 0.6));
+        }
+
+        .numero-gigante {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 90px;
+            font-weight: 800;
+            color: #001f4d;
+            text-shadow: 2px 2px 0px white;
+            z-index: 10;
+        }
+
+        @keyframes flotar {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* CAJAS DE DATOS */
+        .info-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+        
+        .fila-dato {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        input {
+            background: transparent;
+            border: 1px solid var(--dorado);
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+            width: 45%;
+            text-align: center;
+        }
+
+        /* BOTONES */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 0 #000;
+        }
+
+        .btn:active { box-shadow: 0 2px 0 #000; transform: translateY(2px); }
+        .btn-iniciar { background: var(--dorado); color: #000; }
+        .btn-nuevo { background: var(--rojo); color: white; }
+
+        /* --- PANEL DERECHO (TABLERO) --- */
+        .panel-derecho {
+            width: 70%;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-derecho {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--dorado);
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .titulo-grande {
+            color: var(--dorado);
+            font-size: 40px;
+            margin: 0;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        /* AQUI SE CONFIGURA EL LOGO DE LA ESTRELLA */
+        .logo-estrella { 
+            height: 120px; 
+            filter: drop-shadow(0 0 10px var(--dorado));
+        }
+
+        /* GRILLA DE NÚMEROS */
+        .grilla-numeros {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
+            gap: 8px;
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-right: 5px;
+        }
+
+        .casilla-numero {
+            background: #003366;
+            border: 1px solid #444;
+            padding: 2px;
+            text-align: center;
+            border-radius: 5px;
+            font-size: 14px;
+            position: relative;
+        }
+
+        .casilla-numero strong { display: block; font-size: 18px; }
+
+        .casilla-numero.ganador {
+            background: radial-gradient(circle, var(--dorado) 0%, #ff8c00 100%);
+            color: black;
+            border: 2px solid white;
+            transform: scale(1.1);
+            z-index: 5;
+        }
+
+        .estrellas { color: #444; font-size: 8px; letter-spacing: -1px; }
+        .estrellas.activas { color: yellow; }
+
+        /* LISTA GANADORES */
+        .ganadores-box {
+            margin-top: 10px;
+            background: #000;
+            padding: 10px;
+            border: 1px solid var(--dorado);
+            color: var(--dorado);
+            min-height: 50px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="panel-izquierdo">
+        
+        <div class="bola-flotante-container">
+            <img src="image_4760fb.jpg" class="bola-imagen" alt="Bola Bingo">
+            <div class="numero-gigante" id="numero-actual">--</div>
+        </div>
+
+        <div class="info-box">
+            <div class="fila-dato">
+                <input type="text" value="S/ 5.00" placeholder="Precio">
+                <input type="number" id="total-jugadores" value="90" placeholder="Cant. Nums">
+            </div>
+            <div class="fila-dato" style="color: yellow; font-weight: bold; justify-content: center;">
+                <span id="reloj">00:00:00</span>
+            </div>
+        </div>
+
+        <div>
+            <button class="btn btn-iniciar" onclick="sacarBola()">▶ INICIAR SORTEO</button>
+            <button class="btn btn-nuevo" onclick="location.reload()">🔄 NUEVO JUEGO</button>
+        </div>
+
+        <div class="info-box">
+            <label>🏆 PREMIOS</label>
+            <input type="text" placeholder="1º: S/ 1000" style="width: 100%; margin-top: 5px;">
+            <input type="text" placeholder="2º: S/ 500" style="width: 100%; margin-top: 5px;">
+        </div>
+
+        <div class="ganadores-box">
+            <small>🏆 ÚLTIMO GANADOR:</small>
+            <div id="ultimo-ganador">...</div>
+        </div>
+
+        <div class="info-box">
+            <small>Historial:</small>
+            <div id="historial" style="color: var(--dorado); font-size: 14px; word-wrap: break-word;"></div>
+        </div>
+    </div>
+
+    <div class="panel-derecho">
+        <div class="header-derecho">
+            <div>
+                <h1 class="titulo-grande">BINGO ASTERIA PERÚ</h1>
+                <p style="margin:0; opacity: 0.8;">Sistema de Sorteo Profesional</p>
+            </div>
+            <img src="logo.png" class="logo-estrella" alt="Logo Estrella">
+        </div>
+
+        <div class="grilla-numeros" id="tablero">
+            </div>
+    </div>
+
+    <script>
+        // --- JAVASCRIPT ---
+
+        // 1. Reloj
+        setInterval(() => {
+            const ahora = new Date();
+            document.getElementById('reloj').innerText = now = ahora.toLocaleTimeString();
+        }, 1000);
+
+        // 2. Generar Tablero
+        const tablero = document.getElementById('tablero');
+        const inputJugadores = document.getElementById('total-jugadores');
+        let numerosSorteados = [];
+
+        function generarTablero() {
+            tablero.innerHTML = "";
+            let max = parseInt(inputJugadores.value) || 90;
+            for (let i = 1; i <= max; i++) {
+                let div = document.createElement('div');
+                div.className = 'casilla-numero';
+                div.id = 'num-' + i;
+                div.innerHTML = `<strong>${i}</strong><span class="estrellas">★★★★★</span>`;
+                tablero.appendChild(div);
+            }
+        }
+        
+        // Generar al inicio
+        generarTablero();
+        
+        // Regenerar si cambian el número
+        inputJugadores.addEventListener('change', generarTablero);
+
+        // 3. Sacar Bola
+        function sacarBola() {
+            let max = parseInt(inputJugadores.value) || 90;
+            let numero;
+
+            // Seguridad: Si ya salieron todos
+            if (numerosSorteados.length >= max) {
+                alert("¡Juego Terminado! Ya salieron todos los números.");
+                return;
+            }
+
+            // Elegir número random que no haya salido
+            do {
+                numero = Math.floor(Math.random() * max) + 1;
+            } while (numerosSorteados.includes(numero));
+
+            numerosSorteados.push(numero);
+
+            // Actualizar Bola Grande
+            const numGigante = document.getElementById('numero-actual');
+            numGigante.style.transform = "translate(-50%, -50%) scale(0.1)"; // Efecto zoom
+            setTimeout(() => numGigante.style.transform = "translate(-50%, -50%) scale(1)", 200);
+            numGigante.innerText = numero;
+
+            // Marcar en Tablero
+            let casilla = document.getElementById('num-' + numero);
+            if (casilla) {
+                casilla.classList.add('ganador');
+                casilla.querySelector('.estrellas').classList.add('activas');
+                casilla.scrollIntoView({behavior: "smooth", block: "center"});
+            }
+
+            // Historial
+            document.getElementById('historial').innerText = numero + " - " + document.getElementById('historial').innerText;
+        }
+    </script>
+</body>
+</html>
