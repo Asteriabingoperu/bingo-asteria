@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Asteria Perú - Panel Oficial</title>
+    <style>
+        /* --- COLORES EXACTOS DE TU IMAGEN --- */
+        :root {
+            --azul-fondo: #001233;  /* El azul oscuro del fondo */
+            --amarillo: #FFC107;    /* El amarillo intenso de los botones */
+            --blanco: #ffffff;
+            --gris-claro: #f0f0f0;
+            --azul-boton: #0d2b5e;  /* Azul de los botones inactivos */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--azul-fondo);
+            color: var(--blanco);
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        /* HEADER */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        h1 { margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        .icono-copa { color: var(--amarillo); font-size: 28px; }
+
+        /* CONTENEDOR PRINCIPAL (3 COLUMNAS) */
+        .layout-principal {
+            display: grid;
+            grid-template-columns: 250px 1fr 250px; /* Izq - Centro - Der */
+            gap: 20px;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* --- COLUMNA IZQUIERDA (CONFIGURACIÓN) --- */
+        .panel-izq {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        label { font-size: 14px; font-weight: bold; margin-bottom: 5px; display: block; }
+
+        .input-blanco {
+            background: var(--blanco);
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            color: #000;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .fila-premios {
+            display: flex;
+            gap: 10px;
+        }
+
+        .bloque-amarillo {
+            background: var(--amarillo);
+            color: #000;
+            border-radius: 8px;
+            padding: 10px;
+            font-weight: bold;
+            text-align: center;
+            border: none;
+            width: 100%;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .bloque-tiempo {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* --- COLUMNA CENTRAL (TABLERO BLANCO) --- */
+        .panel-centro {
+            background: rgba(255,255,255,0.05); /* Un fondo sutil */
+            border-radius: 15px;
+            padding: 15px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); /* Tarjetas adaptables */
+            grid-auto-rows: 110px;
+            gap: 10px;
+        }
+
+        /* TARJETA DE NÚMERO (Estilo exacto de la imagen) */
+        .tarjeta {
+            background: var(--blanco);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .tarjeta-label { font-size: 10px; color: #666; text-transform: uppercase; }
+        .tarjeta-numero { font-size: 32px; font-weight: bold; color: #000; line-height: 1; }
+        .tarjeta-estrellas { color: var(--amarillo); font-size: 10px; letter-spacing: -1px; margin-bottom: 2px;}
+        
+        .btn-pagado-mini {
+            background: var(--amarillo);
+            color: #000;
+            width: 100%;
+            border: none;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 4px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+        }
+
+        .btn-pagado-mini:hover { background: #eec948; }
+
+        /* ESTADO GANADOR (Cuando sale la bola) */
+        .tarjeta.ganador {
+            background: #4CAF50; /* Verde victoria */
+            transform: scale(1.05);
+            border: 2px solid yellow;
+        }
+        .tarjeta.ganador .tarjeta-numero { color: white; }
+        .tarjeta.ganador .tarjeta-label { color: white; }
+
+        /* --- COLUMNA DERECHA (CONTROLES) --- */
+        .panel-der {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn-grande {
+            background: var(--amarillo);
+            color: #000;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            width: 100%;
+        }
+
+        .btn-azul {
+            background: var(--azul-boton);
+            color: var(--blanco);
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .grupo-velocidad {
+            display: flex;
+            gap: 5px;
+        }
+        .btn-velocidad {
+            background: var(--azul-boton);
+            color: white;
+            border: none;
+            padding: 8px;
+            flex: 1;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-velocidad.activo { background: #3b5da3; border: 1px solid white; }
+
+        .caja-azul-oscura {
+            background: #081b38;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #1f3a6e;
+        }
+
+        .ultimo-numero-display {
+            font-size: 40px;
+            color: var(--amarillo);
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1><span class="icono-copa">🏆</span> BINGO ASTERIA PERÚ</h1>
+        <div style="font-size: 14px; opacity: 0.8;">bingoasteriaperu.online</div>
+    </header>
+
+    <div class="layout-principal">
+
+        <aside class="panel-izq">
+            <div>
+                <label>Número de Premios:</label>
+                <input type="number" class="input-blanco" value="2">
+            </div>
+
+            <div class="fila-premios">
+                <div style="flex:1">
+                    <label>1º Premio (S/)</label>
+                    <input type="text" class="input-blanco" value="20">
+                </div>
+                <div style="flex:1">
+                    <label>2º Premio (S/)</label>
+                    <input type="text" class="input-blanco" value="15">
+                </div>
+            </div>
+
+            <div>
+                <label>Precio</label>
+                <div class="bloque-amarillo">S/ 5.00</div> </div>
+
+            <div>
+                <label>Teléfono</label>
+                <div class="bloque-amarillo">
+                    912450633 🔵 dale
+                </div>
+            </div>
+
+            <div class="bloque-tiempo">
+                <div class="bloque-amarillo" id="fecha-actual">--/--</div>
+                <div class="bloque-amarillo" id="hora-actual">--:--</div>
+            </div>
+
+            <div>
+                <label>Tabla de Jugadores</label>
+                <div class="input-blanco" style="font-size:12px; text-align: left; height: 100px;">
+                    1. Ronald - ****999<br>
+                    2. María - ****123
+                </div>
+            </div>
+        </aside>
+
+        <main class="panel-centro" id="grid-tablero">
+            </main>
+
+        <aside class="panel-der">
+            <button class="btn-grande" onclick="sacarBola()">▶ Iniciar Sorteo</button>
+            <button class="btn-azul" onclick="location.reload()">Nuevo Juego</button>
+
+            <div>
+                <label>Velocidad del Sorteo:</label>
+                <div class="grupo-velocidad">
+                    <button class="btn-velocidad">1x</button>
+                    <button class="btn-velocidad activo">1.5x</button>
+                    <button class="btn-velocidad">2x</button>
+                </div>
+            </div>
+
+            <div>
+                <label>🏆 Ganadores</label>
+                <div class="caja-azul-oscura" style="height: 60px; font-size: 12px; color: #aaa; display:flex; align-items:center; justify-content:center;">
+                    Los ganadores aparecerán aquí.
+                </div>
+            </div>
+
+            <div>
+                <label>Último Número</label>
+                <div class="caja-azul-oscura">
+                    <div class="ultimo-numero-display" id="display-numero">--</div>
+                </div>
+            </div>
+
+            <div>
+                <label>Números Salientes</label>
+                <div class="caja-azul-oscura" id="historial" style="font-size: 12px; color: #aaa; word-wrap: break-word;">
+                    El historial aparecerá aquí.
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <script>
+        /* --- LÓGICA DEL BINGO --- */
+        
+        // 1. Reloj y Fecha Automáticos
+        function actualizarReloj() {
+            const ahora = new Date();
+            document.getElementById('hora-actual').innerText = ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('fecha-actual').innerText = now = new Date().toLocaleDateString();
+        }
+        setInterval(actualizarReloj, 1000);
+        actualizarReloj();
+
+        // 2. Generar Tablero (Estilo Tarjeta Blanca)
+        const tablero = document.getElementById('grid-tablero');
+        const totalNumeros = 50; // Puedes cambiar esto a 90 o 500
+        let numerosSorteados = [];
+
+        function crearTablero() {
+            tablero.innerHTML = "";
+            for (let i = 1; i <= totalNumeros; i++) {
+                let card = document.createElement('div');
+                card.className = 'tarjeta';
+                card.id = 'num-' + i;
+                
+                // HTML interno de la tarjeta (Igual a la foto)
+                card.innerHTML = `
+                    <div class="tarjeta-label">Libre</div>
+                    <div class="tarjeta-numero">${i}</div>
+                    <div class="tarjeta-estrellas">★★★★★</div>
+                    <button class="btn-pagado-mini">✔ Pagado</button>
+                `;
+                tablero.appendChild(card);
+            }
+        }
+        crearTablero();
+
+        // 3. Sorteo
+        function sacarBola() {
+            if (numerosSorteados.length >= totalNumeros) {
+                alert("Fin del juego");
+                return;
+            }
+
+            let numero;
+            do {
+                numero = Math.floor(Math.random() * totalNumeros) + 1;
+            } while (numerosSorteados.includes(numero));
+
+            numerosSorteados.push(numero);
+
+            // Actualizar Pantalla Derecha
+            document.getElementById('display-numero').innerText = numero;
+            document.getElementById('historial').innerText = numero + " - " + document.getElementById('historial').innerText;
+
+            // Actualizar Tablero Central (Efecto Visual)
+            let tarjeta = document.getElementById('num-' + numero);
+            if (tarjeta) {
+                tarjeta.classList.add('ganador');
+                // Auto-scroll para ver el número si está muy abajo
+                tarjeta.scrollIntoView({behavior: "smooth", block: "center"});
+            }
+        }
+    </script>
+</body>
+</html>
