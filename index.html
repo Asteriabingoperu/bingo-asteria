@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bingo Asteria Perú</title>
+
+<style>
+/* ========================== */
+/*   ESTILOS GENERALES        */
+/* ========================== */
+body{
+    margin:0;
+    background:#0b1e3f;
+    font-family:Arial;
+    color:white;
+}
+
+/* ========================== */
+/*      ENCABEZADO            */
+/* ========================== */
+header{
+    text-align:center;
+    padding:20px 0;
+}
+header h1{
+    margin:0;
+    font-size:45px;
+    color:#ffd700;
+    text-shadow:0 0 12px red;
+}
+header h2{
+    margin:0;
+    margin-top:5px;
+    opacity:0.9;
+}
+
+/* ========================== */
+/*        BOLA 3D             */
+/* ========================== */
+.bola{
+    width:170px;
+    height:170px;
+    margin:15px auto;
+    background: radial-gradient(circle at 30% 30%, #fff6c7, #ffcc00, #b98600);
+    border-radius:50%;
+    box-shadow:0 0 25px #ffe05f, inset 0 0 20px #c77f00;
+    position:relative;
+    animation:pulse 2s infinite ease-in-out;
+}
+.bola::after{
+    content:"";
+    position:absolute;
+    width:140px;
+    height:20px;
+    border-radius:50%;
+    background:red;
+    top:55%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    box-shadow:0 0 12px red;
+}
+@keyframes pulse{
+    0%,100%{transform:scale(1);}
+    50%{transform:scale(1.06);}
+}
+
+/* ========================== */
+/*       CONTENEDOR           */
+/* ========================== */
+.container{
+    display:grid;
+    grid-template-columns:1fr 350px;
+    gap:20px;
+    padding:20px;
+}
+
+/* ========================== */
+/*  PANEL DE NÚMEROS (1–500)  */
+/* ========================== */
+.panel{
+    background:rgba(255,255,255,0.08);
+    padding:20px;
+    border-radius:10px;
+    display:grid;
+    grid-template-columns:repeat(20,1fr);
+    gap:8px;
+}
+.num{
+    background:rgba(255,255,255,0.2);
+    border-radius:8px;
+    padding:8px;
+    text-align:center;
+    cursor:pointer;
+    transition:0.3s;
+}
+.num:hover{
+    background:rgba(255,255,255,0.35);
+}
+
+/* ========================== */
+/*      ESTRELLAS             */
+/* ========================== */
+.stars{
+    display:flex;
+    justify-content:center;
+    gap:2px;
+    margin-top:3px;
+}
+.star{
+    width:12px;
+    height:12px;
+    background:url('data:image/svg+xml;utf8,<svg fill="white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568L24 9.748l-6 5.848 1.416 8.268L12 18.896l-7.416 4.968L6 15.596 0 9.748l8.332-1.593z"/></svg>');
+    background-size:cover;
+    opacity:0.3;
+}
+.star.on{
+    opacity:1;
+    filter:drop-shadow(0 0 3px gold);
+}
+
+/* ========================== */
+/*     PANEL DERECHA          */
+/* ========================== */
+.right{
+    background:rgba(255,255,255,0.08);
+    padding:20px;
+    border-radius:10px;
+}
+.right button{
+    padding:10px 15px;
+    border:none;
+    cursor:pointer;
+    border-radius:6px;
+    background:#ffd700;
+    color:black;
+    font-weight:bold;
+}
+.right button:hover{
+    background:#ffef87;
+}
+
+/* ========================== */
+/*         MODAL              */
+/* ========================== */
+.modal{
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.65);
+    justify-content:center;
+    align-items:center;
+}
+.modal-box{
+    background:white;
+    color:black;
+    width:300px;
+    padding:20px;
+    border-radius:12px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>BINGO ASTERIA PERÚ</h1>
+    <h2>bingoasteriaperu.online</h2>
+</header>
+
+<div class="bola"></div>
+
+<div class="container">
+    <div class="panel" id="panel"></div>
+
+    <div class="right">
+        <h2>Controles</h2>
+        <button onclick="sacar()">Sacar Número</button>
+        <h3>Número actual: <span id="actual">--</span></h3>
+
+        <h3>Métodos de Pago</h3>
+        <p><b>Yape / Plin / Dale:</b> 905888379</p>
+    </div>
+</div>
+
+<!-- ========================== -->
+<!--        MODAL FORM          -->
+<!-- ========================== -->
+<div class="modal" id="modal">
+    <div class="modal-box">
+        <h2>Registrar</h2>
+
+        Nombre:<br>
+        <input id="nom" style="width:100%"><br><br>
+
+        Apellido:<br>
+        <input id="ape" style="width:100%"><br><br>
+
+        Teléfono:<br>
+        <input id="tel" style="width:100%"><br><br>
+
+        Pago:<br>
+        <select id="pag" style="width:100%">
+            <option>Pagó</option>
+            <option>Debe</option>
+        </select><br><br>
+
+        <button onclick="guardar()">Guardar</button>
+        <button onclick="cerrar()">Cancelar</button>
+    </div>
+</div>
+
+<script>
+/* ========================== */
+/*     VARIABLES GLOBALES     */
+/* ========================== */
+let sel = null;
+let rep = {};
+let jugadores = {};
+
+const panel = document.getElementById("panel");
+
+/* ========================== */
+/*   GENERAR LOS 500 NÚMEROS  */
+/* ========================== */
+for(let i=1;i<=500;i++){
+    let d = document.createElement("div");
+    d.className="num";
+    d.id="n"+i;
+    d.innerHTML = `
+        <div>${i}</div>
+        <div class="stars">
+            <div class="star"></div>
+            <div class="star"></div>
+            <div class="star"></div>
+            <div class="star"></div>
+            <div class="star"></div>
+        </div>
+    `;
+    d.onclick=()=>abrir(i);
+    panel.appendChild(d);
+}
+
+/* ========================== */
+/*         MODAL              */
+/* ========================== */
+function abrir(n){
+    sel=n;
+    document.getElementById("modal").style.display="flex";
+}
+function cerrar(){
+    document.getElementById("modal").style.display="none";
+}
+
+/* ========================== */
+/*     GUARDAR JUGADOR        */
+/* ========================== */
+function guardar(){
+    let nombre=document.getElementById("nom").value;
+    let apellido=document.getElementById("ape").value;
+    let telefono=document.getElementById("tel").value;
+    let pago=document.getElementById("pag").value;
+
+    jugadores[sel]={nombre,apellido,telefono,pago};
+
+    let casilla=document.getElementById("n"+sel);
+    casilla.style.background="rgba(180,255,220,0.5)";
+    casilla.innerHTML=
+        `<div>${sel}<br><small>${nombre}</small></div>
+         <div class='stars'>
+            <div class='star'></div>
+            <div class='star'></div>
+            <div class='star'></div>
+            <div class='star'></div>
+            <div class='star'></div>
+         </div>`;
+
+    cerrar();
+}
+
+/* ========================== */
+/*   SACAR BOLA + ESTRELLAS   */
+/* ========================== */
+function sacar(){
+    let n=Math.floor(Math.random()*500)+1;
+    document.getElementById("actual").innerText=n;
+
+    if(!rep[n]) rep[n]=0;
+    rep[n]++;
+
+    let stars=document.querySelectorAll("#n"+n+" .star");
+    for(let i=0;i<rep[n];i++){
+        if(stars[i]) stars[i].classList.add("on");
+    }
+}
+</script>
+
+</body>
+</html>
