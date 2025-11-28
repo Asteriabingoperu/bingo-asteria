@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Asteria - 5 Aciertos Slot Edition</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-dark: #050a14;
+            --panel-bg: #0f192b;
+            --gold: #FFD700;
+            --gold-glow: #ffae00;
+            --neon-blue: #00f2ff;
+            --neon-pink: #ff0055;
+            --text-white: #ffffff;
+            --card-bg: #16243d;
+            --success: #00ff88;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-white);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% 50%, #1a2c4e 0%, #050a14 100%);
+        }
+
+        /* --- ENCABEZADO ESTILO CASINO --- */
+        header {
+            background: linear-gradient(90deg, #0f192b 0%, #1c2e4a 50%, #0f192b 100%);
+            padding: 10px 20px;
+            border-bottom: 2px solid var(--gold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+            z-index: 100;
+        }
+
+        .logo-box {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .star-logo {
+            font-size: 30px;
+            color: var(--gold);
+            text-shadow: 0 0 10px var(--gold-glow);
+            animation: spin 10s linear infinite;
+        }
+
+        h1 {
+            margin: 0;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(to bottom, #fff, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 24px;
+        }
+
+        /* --- LAYOUT --- */
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            height: calc(100vh - 70px);
+            gap: 15px;
+            padding: 15px;
+        }
+
+        .panel {
+            background: rgba(15, 25, 43, 0.8);
+            border: 1px solid #2a4066;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- BOLA 3D ANIMADA --- */
+        .ball-stage {
+            height: 220px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, rgba(255,215,0,0.05) 0%, transparent 70%);
+            position: relative;
+        }
+
+        .ball-3d {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fffde7, #ffd700, #ff8c00);
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.4), inset -10px -10px 20px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border: 2px solid #fff;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .ball-3d::before {
+            content: '';
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 5px solid #d32f2f;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .ball-number {
+            font-size: 80px;
+            font-weight: 900;
+            color: #020b1c;
+            z-index: 10;
+        }
+
+        /* --- GRILLA DE NÚMEROS (SLOT STYLE) --- */
+        .grid-container {
+            flex: 1;
+            overflow-y: auto;
+            margin-top: 15px;
+            padding-right: 5px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+        }
+
+        /* TARJETA DE NÚMERO */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid #2a4066;
+            border-radius: 8px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .card:hover {
+            border-color: var(--neon-blue);
+            transform: translateY(-2px);
+            background: #1e2f4d;
+        }
+
+        .card-number {
+            font-size: 24px;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .card-name {
+            font-size: 9px;
+            color: #8892b0;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+            text-align: center;
+            height: 12px;
+        }
+
+        /* SISTEMA DE ESTRELLAS (5 ACIERTOS) */
+        .stars-container {
+            display: flex;
+            gap: 2px;
+            margin-top: 4px;
+            background: rgba(0,0,0,0.3);
+            padding: 2px 4px;
+            border-radius: 10px;
+        }
+
+        .star {
+            font-size: 8px;
+            color: #333; /* Apagada */
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        .star.active {
+            color: var(--gold);
+            text-shadow: 0 0 5px var(--gold);
+            transform: scale(1.2);
+        }
+
+        .hit-count {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 9px;
+            background: #000;
+            padding: 1px 4px;
+            border-radius: 4px;
+            color: #888;
+        }
+
+        /* ESTILO GANADOR (CORONA) */
+        .card.winner {
+            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+            border: 2px solid #fff;
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+        .card.winner .card-number, 
+        .card.winner .card-name { color: #000; font-weight: bold; }
+        .card.winner .star { color: #000 !important; }
+
+        .crown-icon {
+            display: none;
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 20px;
+            color: var(--gold);
+            text-shadow: 0 0 5px black;
+            z-index: 20;
+            animation: bounce 1s infinite;
+        }
+
+        /* --- BOTONES Y CONTROLES --- */
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-bottom: 10px;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 1px;
+            transition: transform 0.1s;
+        }
+        
+        .btn:active { transform: scale(0.98); }
+
+        .btn-start {
+            background: linear-gradient(45deg, #ff0055, #ff00aa);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 0, 85, 0.4);
+            font-size: 18px;
+        }
+
+        .btn-reset {
+            background: transparent;
+            border: 2px solid #444;
+            color: #888;
+        }
+
+        /* --- MODALES --- */
+        .modal-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center; align-items: center;
+        }
+
+        .modal-box {
+            background: #16243d;
+            border: 2px solid var(--neon-blue);
+            padding: 25px;
+            border-radius: 15px;
+            width: 320px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.2);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block; font-size: 11px; color: var(--neon-blue); margin-bottom: 5px; text-transform: uppercase;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%; padding: 10px;
+            background: #0b1424; border: 1px solid #2a4066;
+            color: white; border-radius: 5px; box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* CHECKBOX PAGADO */
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 255, 136, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--success);
+            cursor: pointer;
+        }
+
+        .checkbox-wrapper input {
+            width: 20px; height: 20px; margin-right: 10px; accent-color: var(--success);
+        }
+
+        /* ANIMACIONES */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes bounce { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-5px); } }
+
+        /* CANVAS DE CHISPITAS */
+        #confetti-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999;
+        }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <header>
+        <div class="logo-box">
+            <i class="fas fa-star star-logo"></i>
+            <div>
+                <h1>ASTERIA BINGO</h1>
+                <div style="font-size:10px; color:#8892b0; letter-spacing:3px;">SLOT EDITION</div>
+            </div>
+        </div>
+        <div style="text-align:right;">
+            <div style="font-size:12px; color:var(--gold);">PREMIO MAYOR</div>
+            <div style="font-size:20px; font-weight:bold; color:white;">5 ACIERTOS</div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <div class="panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px;">
+                <div style="font-size:12px; color:var(--neon-blue);">TABLERO DE JUEGO</div>
+                <div style="font-size:11px; color:#888;">EDITAR: Click en tarjeta</div>
+            </div>
+
+            <div class="grid-container">
+                <div class="grid" id="grid">
+                    </div>
+            </div>
+
+            <div style="margin-top:10px; display:flex; gap:10px; justify-content:center;">
+                <input type="number" id="config-total" value="50" onchange="initGame()" style="width:60px; text-align:center;" title="Total Números">
+                <div style="font-size:10px; color:#666; display:flex; align-items:center;">TOTAL NÚMEROS</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="ball-stage">
+                <div class="ball-3d" id="bola-anim">
+                    <div class="ball-number" id="num-display">--</div>
+                </div>
+            </div>
+
+            <div style="margin-top:20px;">
+                <button class="btn btn-start" onclick="sacarBola()">
+                    <i class="fas fa-bolt"></i> GIRAR BOLA
+                </button>
+                <button class="btn btn-reset" onclick="location.reload()">
+                    <i class="fas fa-redo"></i> NUEVO JUEGO
+                </button>
+            </div>
+
+            <div style="margin-top:20px; border-top:1px solid #333; padding-top:10px;">
+                <div style="font-size:12px; color:var(--gold); margin-bottom:10px; text-align:center;">🏆 ÚLTIMOS GANADORES</div>
+                <div id="winners-log" style="font-size:11px; color:#ccc; height:100px; overflow-y:auto; text-align:center;">
+                    ...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-registro">
+        <div class="modal-box">
+            <h3 style="color:var(--neon-blue); margin-top:0;">REGISTRO #<span id="reg-id"></span></h3>
+            
+            <div class="input-group">
+                <label>Nombre</label>
+                <input type="text" id="reg-nombre" placeholder="Ej: Juan">
+            </div>
+            
+            <div class="input-group">
+                <label>Apellido</label>
+                <input type="text" id="reg-apellido" placeholder="Ej: Pérez">
+            </div>
+            
+            <div class="input-group">
+                <label>Teléfono</label>
+                <input type="text" id="reg-tel" placeholder="999...">
+            </div>
+
+            <label class="checkbox-wrapper">
+                <input type="checkbox" id="reg-pagado">
+                <span style="font-weight:bold; color:var(--success);">✅ PAGADO CONFIRMADO</span>
+            </label>
+
+            <div style="margin-top:20px; display:flex; gap:10px;">
+                <button onclick="guardarRegistro()" class="btn" style="background:var(--neon-blue); color:black; margin:0;">GUARDAR</button>
+                <button onclick="cerrarModal()" class="btn" style="background:#333; color:white; margin:0;">CANCELAR</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- LÓGICA DEL CASINO ---
+        let config = { total: 50 };
+        let players = {}; // Datos: { id: { nombre, apellido, tel, pagado } }
+        let counts = {};  // Conteos: { id: veces_salido }
+        let editingId = null;
+
+        function initGame() {
+            config.total = parseInt(document.getElementById('config-total').value);
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            players = {};
+            counts = {};
+
+            for(let i=1; i<=config.total; i++) {
+                counts[i] = 0; // Inicializar conteo en 0
+                
+                // Crear Tarjeta
+                let card = document.createElement('div');
+                card.className = 'card';
+                card.id = 'card-' + i;
+                card.onclick = () => abrirModal(i);
+                
+                // HTML de la tarjeta
+                card.innerHTML = `
+                    <div class="crown-icon" id="crown-${i}"><i class="fas fa-crown"></i></div>
+                    <div class="hit-count" id="count-${i}">0</div>
+                    <div class="card-number">${i}</div>
+                    <div class="card-name" id="name-${i}">LIBRE</div>
+                    <div class="stars-container">
+                        <i class="fas fa-star star" id="s-${i}-1"></i>
+                        <i class="fas fa-star star" id="s-${i}-2"></i>
+                        <i class="fas fa-star star" id="s-${i}-3"></i>
+                        <i class="fas fa-star star" id="s-${i}-4"></i>
+                        <i class="fas fa-star star" id="s-${i}-5"></i>
+                    </div>
+                `;
+                grid.appendChild(card);
+            }
+        }
+
+        // --- SACAR BOLA (Mecánica tipo Tragamonedas) ---
+        function sacarBola() {
+            // Animación visual
+            const bola = document.getElementById('bola-anim');
+            bola.style.transform = "scale(1.2) rotate(360deg)";
+            setTimeout(() => bola.style.transform = "scale(1) rotate(0deg)", 300);
+
+            // Generar número random (Permite repetición para llenar estrellas)
+            const num = Math.floor(Math.random() * config.total) + 1;
+            
+            // Actualizar display
+            document.getElementById('num-display').innerText = num;
+
+            // Aumentar conteo
+            counts[num]++;
+            document.getElementById(`count-${num}`).innerText = counts[num];
+
+            // Pintar estrella correspondiente
+            if(counts[num] <= 5) {
+                const star = document.getElementById(`s-${num}-${counts[num]}`);
+                if(star) star.classList.add('active');
+            }
+
+            // Scroll a la tarjeta
+            const card = document.getElementById(`card-${num}`);
+            card.scrollIntoView({behavior:"smooth", block:"center"});
+            card.style.borderColor = "var(--gold)";
+            setTimeout(() => card.style.borderColor = "#2a4066", 1000);
+
+            // VERIFICAR GANADOR (5 Aciertos)
+            if(counts[num] === 5) {
+                triggerWin(num);
+            }
+        }
+
+        // --- EFECTO GANADOR ---
+        function triggerWin(id) {
+            const card = document.getElementById(`card-${id}`);
+            card.classList.add('winner');
+            document.getElementById(`crown-${id}`).style.display = 'block';
+            
+            // Log de ganador
+            const nombre = players[id] ? `${players[id].nombre} ${players[id].apellido}` : "Sin Nombre";
+            const log = document.getElementById('winners-log');
+            log.innerHTML = `<div style="color:var(--gold); margin-bottom:5px;">👑 #${id} - ${nombre} (5 ACIERTOS)</div>` + log.innerHTML;
+
+            // Chispitas
+            fireConfetti();
+            alert(`¡TENEMOS UN GANADOR! \nEl número ${id} ha completado los 5 aciertos.`);
+        }
+
+        // --- SISTEMA DE REGISTRO ---
+        function abrirModal(id) {
+            editingId = id;
+            document.getElementById('reg-id').innerText = id;
+            
+            // Cargar datos si existen
+            if(players[id]) {
+                document.getElementById('reg-nombre').value = players[id].nombre;
+                document.getElementById('reg-apellido').value = players[id].apellido;
+                document.getElementById('reg-tel').value = players[id].tel;
+                document.getElementById('reg-pagado').checked = players[id].pagado;
+            } else {
+                // Limpiar
+                document.getElementById('reg-nombre').value = "";
+                document.getElementById('reg-apellido').value = "";
+                document.getElementById('reg-tel').value = "";
+                document.getElementById('reg-pagado').checked = false;
+            }
+
+            document.getElementById('modal-registro').style.display = 'flex';
+        }
+
+        function cerrarModal() {
+            document.getElementById('modal-registro').style.display = 'none';
+        }
+
+        function guardarRegistro() {
+            const nombre = document.getElementById('reg-nombre').value;
+            const apellido = document.getElementById('reg-apellido').value;
+            const tel = document.getElementById('reg-tel').value;
+            const pagado = document.getElementById('reg-pagado').checked;
+
+            if(nombre) {
+                players[editingId] = { nombre, apellido, tel, pagado };
+                
+                // Actualizar tarjeta visual
+                const cardName = document.getElementById(`name-${editingId}`);
+                cardName.innerText = `${nombre} ${apellido}`;
+                cardName.style.color = "var(--neon-blue)";
+                
+                // Si está pagado, poner borde verde sutil
+                if(pagado) {
+                    document.getElementById(`card-${editingId}`).style.boxShadow = "inset 0 0 10px rgba(0,255,136,0.2)";
+                } else {
+                     document.getElementById(`card-${editingId}`).style.boxShadow = "none";
+                }
+            }
+            cerrarModal();
+        }
+
+        // --- SISTEMA DE CHISPITAS (CONFETTI SIMPLE) ---
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.onresize = resizeCanvas;
+        resizeCanvas();
+
+        function fireConfetti() {
+            for(let i=0; i<100; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    life: 100,
+                    color: `hsl(${Math.random()*360}, 100%, 50%)`
+                });
+            }
+            requestAnimationFrame(updateConfetti);
+        }
+
+        function updateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for(let i=0; i<particles.length; i++) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, 5, 5);
+            }
+            particles = particles.filter(p => p.life > 0);
+            if(particles.length > 0) requestAnimationFrame(updateConfetti);
+        }
+
+        // Iniciar juego
+        initGame();
+
+    </script>
+</body>
+</html>
