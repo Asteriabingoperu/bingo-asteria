@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BINGO ASTERIA PERÚ - Oficial</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- ESTILOS VISUALES (Diseño Profesional) --- */
+        :root {
+            --azul-oscuro: #020b1c;
+            --azul-panel: #0a192f;
+            --dorado: #FFD700;
+            --dorado-brillo: #ffe66d;
+            --rojo-anillo: #d32f2f;
+            --blanco: #e6f1ff;
+            --gris-texto: #8892b0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden; /* Evita scroll doble */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- ENCABEZADO --- */
+        header {
+            background: rgba(10, 25, 47, 0.95);
+            padding: 10px 20px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .logo-texto {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--dorado);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .barra-datos {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .dato-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .dato-label { font-size: 9px; color: var(--gris-texto); text-transform: uppercase; letter-spacing: 1px; }
+        .dato-valor { font-size: 14px; font-weight: bold; color: white; }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        .contenedor {
+            display: grid;
+            grid-template-columns: 1fr 350px; /* Izquierda dinámica, Derecha fija */
+            height: calc(100vh - 60px);
+            gap: 10px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        /* --- PANELES --- */
+        .panel {
+            background: var(--azul-panel);
+            border-radius: 12px;
+            border: 1px solid #1e2d3d;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* --- BOLA 3D (CÓDIGO PURO - NO IMAGEN) --- */
+        .zona-bola {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: radial-gradient(circle, rgba(255,215,0,0.05) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+        }
+
+        .bola-3d {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            /* EFECTO DORADO REALISTA */
+            background: radial-gradient(circle at 30% 30%, #fffde7 0%, #ffd700 25%, #f57f17 50%, #5d4037 100%);
+            box-shadow: 
+                0 20px 50px rgba(0,0,0,0.8), /* Sombra principal */
+                inset -10px -10px 30px rgba(0,0,0,0.5); /* Sombra interna */
+            
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Anillo rojo interno */
+        .bola-3d::after {
+            content: '';
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid var(--rojo-anillo);
+            opacity: 0.9;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        /* Numero central */
+        .numero-gigante {
+            font-size: 90px;
+            font-weight: 800;
+            color: #002147; /* Azul oscuro para contraste */
+            z-index: 10;
+            font-family: Arial, sans-serif;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.4);
+        }
+
+        /* --- GRILLA DE NÚMEROS --- */
+        .grid-numeros {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 6px;
+            margin-top: 20px;
+            padding-bottom: 20px;
+        }
+
+        .celda {
+            background: #112240;
+            border-radius: 6px;
+            text-align: center;
+            padding: 8px 4px;
+            font-size: 14px;
+            color: var(--gris-texto);
+            transition: 0.2s;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .celda:hover { border-color: var(--dorado); color: white; }
+        
+        .celda.ganador {
+            background: var(--dorado);
+            color: #020b1c;
+            font-weight: bold;
+            box-shadow: 0 0 10px var(--dorado);
+            border: none;
+        }
+
+        /* --- CONTROLES (Derecha) --- */
+        .btn-accion {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 800;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: transform 0.1s;
+        }
+
+        .btn-iniciar {
+            background: linear-gradient(135deg, #ffd700 0%, #ff8f00 100%);
+            color: #020b1c;
+            box-shadow: 0 4px 0 #b36b00;
+        }
+        .btn-iniciar:active { transform: translateY(3px); box-shadow: none; }
+
+        .btn-nuevo {
+            background: transparent;
+            border: 2px solid #d32f2f;
+            color: #ffcccc;
+            font-size: 14px;
+            padding: 10px;
+        }
+        .btn-nuevo:hover { background: rgba(211, 47, 47, 0.1); }
+
+        /* --- CONFIGURACIÓN (Abajo Izquierda) --- */
+        .seccion-config {
+            margin-top: auto;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .titulo-mini {
+            font-size: 11px;
+            color: var(--dorado);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .grid-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        input {
+            background: #112240;
+            border: 1px solid #233554;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 13px;
+        }
+        input:focus { outline: none; border-color: var(--dorado); }
+
+        /* LISTA GANADORES */
+        .lista-ganadores {
+            flex: 1;
+            background: #112240;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            overflow-y: auto;
+        }
+        .item-ganador {
+            padding: 8px;
+            border-bottom: 1px solid #233554;
+            font-size: 13px;
+        }
+        .item-ganador strong { color: var(--dorado); display: block; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-texto">BINGO ASTERIA PERÚ</div>
+        
+        <div class="barra-datos">
+            <div class="dato-item">
+                <span class="dato-label">Precio</span>
+                <span class="dato-valor">S/ 5.00</span>
+            </div>
+            <div class="dato-item">
+                <span class="dato-label">Contacto</span>
+                <span class="dato-valor" style="color:var(--dorado)">905 888 379</span>
+            </div>
+            <div class="dato-item">
+                <span class="dato-label">Hora</span>
+                <span class="dato-valor" id="reloj">--:--</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="contenedor">
+        
+        <div class="panel">
+            
+            <div class="zona-bola">
+                <div class="bola-3d" id="bola-animada">
+                    <div class="numero-gigante" id="num-central">--</div>
+                </div>
+                <div style="margin-top:10px; font-size:12px; color:var(--dorado); letter-spacing:2px;">NÚMERO SORTEADO</div>
+            </div>
+
+            <div class="titulo-mini">TABLERO DE CONTROL (VISTA RÁPIDA)</div>
+            <div class="grid-numeros" id="grid-demo">
+                </div>
+
+            <div class="seccion-config">
+                <span class="titulo-mini">ASIGNAR JUGADOR AL ÚLTIMO NÚMERO</span>
+                <div class="grid-inputs">
+                    <input type="text" placeholder="Nombre Jugador">
+                    <input type="text" placeholder="Teléfono">
+                </div>
+                <button style="margin-top:10px; background:#1e88e5; color:white; border:none; padding:8px 20px; border-radius:4px; cursor:pointer; font-size:12px;">GUARDAR DATOS</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <span class="titulo-mini" style="text-align:center;">PANEL DE CONTROL</span>
+            
+            <button class="btn-accion btn-iniciar" onclick="sacarBola()">▶ SACAR BOLA</button>
+            
+            <span class="titulo-mini">ÚLTIMOS GANADORES</span>
+            <div class="lista-ganadores">
+                <div class="item-ganador">
+                    <strong>2º Puesto - Ronald (Nº 2)</strong>
+                    <span style="font-size:11px; color:#8892b0;">Premio: S/ 15.00</span>
+                </div>
+                <div class="item-ganador">
+                    <strong>1º Puesto - María (Nº 1)</strong>
+                    <span style="font-size:11px; color:#8892b0;">Premio: S/ 20.00</span>
+                </div>
+                </div>
+
+            <div style="background:#020b1c; padding:15px; border-radius:8px; text-align:center; margin-top:auto; border:1px solid var(--dorado);">
+                <span class="dato-label">ÚLTIMO NÚMERO</span>
+                <div style="font-size:40px; font-weight:bold; color:white;" id="ultimo-num-box">--</div>
+            </div>
+            
+            <button class="btn-accion btn-nuevo" onclick="location.reload()" style="margin-top:15px;">REINICIAR TODO</button>
+        </div>
+
+    </div>
+
+    <script>
+        /* --- LÓGICA DEL BINGO --- */
+        
+        // 1. Reloj en tiempo real
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('reloj').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }, 1000);
+
+        // 2. Generar tablero visual (Ejemplo 1-30)
+        const grid = document.getElementById('grid-demo');
+        for(let i=1; i<=30; i++) {
+            let div = document.createElement('div');
+            div.className = 'celda';
+            div.id = 'cell-' + i;
+            div.innerText = i;
+            grid.appendChild(div);
+        }
+
+        // 3. Función del Botón Principal
+        function sacarBola() {
+            // Efecto visual de rebote en la bola
+            const bola = document.getElementById('bola-animada');
+            bola.style.transform = "scale(1.2) rotate(10deg)";
+            setTimeout(() => { bola.style.transform = "scale(1) rotate(0deg)"; }, 300);
+
+            // Generar número aleatorio (1 al 90)
+            const num = Math.floor(Math.random() * 90) + 1;
+
+            // Actualizar pantallas
+            document.getElementById('num-central').innerText = num;
+            document.getElementById('ultimo-num-box').innerText = num;
+
+            // Marcar en el tablero si existe (1-30 en este demo)
+            const cell = document.getElementById('cell-' + num);
+            if(cell) {
+                cell.classList.add('ganador');
+                // Scroll suave para mostrar el número
+                cell.scrollIntoView({behavior: "smooth", block: "center"});
+            }
+        }
+    </script>
+</body>
+</html>
