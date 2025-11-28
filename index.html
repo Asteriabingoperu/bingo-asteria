@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Asteria Perú - Oficial</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --fondo: #020b1c;
+            --panel: #06152e;
+            --dorado: #FFC107;
+            --dorado-brillo: #ffe66d;
+            --azul-btn: #1e88e5;
+            --rojo-btn: #d32f2f;
+            --blanco: #ffffff;
+            --texto-gris: #8892b0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--fondo);
+            color: var(--blanco);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- ENCABEZADO Y LOGO --- */
+        header {
+            background: rgba(6, 21, 46, 0.95);
+            padding: 10px 20px;
+            border-bottom: 2px solid var(--dorado);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            z-index: 100;
+        }
+
+        .marca-contenedor {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* LOGO ESTRELLA CSS (Profesional) */
+        .logo-estrella {
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle at 50% 50%, #ffd700, #b8860b);
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+            position: relative;
+        }
+        /* Borde blanco simulado con filtro */
+        .logo-estrella::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: white;
+            z-index: -1;
+        }
+
+        .titulo-principal {
+            font-family: 'Pacifico', cursive;
+            font-size: 28px;
+            color: var(--dorado);
+            margin: 0;
+            text-shadow: 2px 2px 0px #000;
+            line-height: 1;
+        }
+
+        .enlaces-web {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            font-size: 12px;
+        }
+        .enlaces-web a {
+            color: var(--dorado);
+            text-decoration: none;
+            margin-bottom: 2px;
+            transition: 0.3s;
+        }
+        .enlaces-web a:hover { color: white; text-shadow: 0 0 5px var(--dorado); }
+
+        /* --- NAVEGACIÓN (Pestañas) --- */
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 10px;
+            background: #040e24;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 10px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn i { font-size: 16px; }
+
+        .nav-btn:hover { background: rgba(255,255,255,0.1); }
+
+        /* ESTADO ACTIVO (Amarillo Dorado) */
+        .nav-btn.activo {
+            background: var(--dorado);
+            color: #020b1c;
+            border-color: var(--dorado);
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
+            transform: scale(1.05);
+        }
+
+        /* --- VISTAS (Ocultar/Mostrar) --- */
+        .vista { display: none; height: 100%; overflow: hidden; }
+        .vista.activa { display: block; }
+
+        /* --- VISTA 1: INICIO (JUEGO) --- */
+        .contenedor-juego {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            height: calc(100vh - 140px);
+            padding: 10px;
+            gap: 15px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 15px;
+            overflow-y: auto;
+            border: 1px solid #1c2e4a;
+        }
+
+        /* Barra Stats Superior */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .stat-box { text-align: center; }
+        .stat-label { font-size: 10px; color: var(--texto-gris); text-transform: uppercase; }
+        .stat-val { font-size: 15px; font-weight: bold; color: white; }
+        
+        .stat-clic { cursor: pointer; text-decoration: underline; color: var(--dorado); transition: 0.2s; }
+        .stat-clic:hover { color: white; }
+
+        /* BOLA 3D */
+        .zona-bola {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .bola-css {
+            width: 160px; height: 160px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fffde7, #ffd700, #b8860b);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset -5px -5px 15px rgba(0,0,0,0.3);
+            border: 2px solid #ffe066;
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+        }
+        .bola-css::after {
+            content: ''; position: absolute; width: 120px; height: 120px;
+            border-radius: 50%; border: 4px solid var(--rojo-anillo); opacity: 0.8;
+        }
+        .numero-gigante {
+            font-size: 70px; font-weight: 800; color: #002366; z-index: 2;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+        }
+
+        /* GRILLA */
+        .grid-nums {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+            gap: 5px;
+        }
+        .celda {
+            background: rgba(255,255,255,0.05);
+            text-align: center;
+            border-radius: 4px;
+            padding: 8px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .celda.ganador {
+            background: var(--dorado); color: black; font-weight: bold;
+            box-shadow: 0 0 10px var(--dorado);
+        }
+
+        /* --- VISTA 2: JUGADORES --- */
+        .contenedor-tabla {
+            padding: 20px;
+            height: calc(100vh - 140px);
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--panel);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #1c2e4a;
+        }
+        th { background: #020b1c; color: var(--dorado); font-size: 12px; text-transform: uppercase; }
+        tr:hover { background: rgba(255,255,255,0.02); }
+
+        .btn-accion {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        .btn-editar { background: var(--azul-btn); }
+        .btn-eliminar { background: var(--rojo-btn); }
+        .btn-editar:hover { background: #1565c0; }
+        .btn-eliminar:hover { background: #b71c1c; }
+
+        /* --- MODALES (Ventanas Emergentes) --- */
+        .modal-fondo {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        .modal-caja {
+            background: #0b1d3b;
+            padding: 25px;
+            border-radius: 10px;
+            width: 300px;
+            border: 1px solid var(--dorado);
+            text-align: center;
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.2);
+        }
+        .modal-titulo { color: var(--dorado); margin-bottom: 15px; font-size: 18px; }
+        
+        .info-pago {
+            background: rgba(255,255,255,0.05);
+            margin: 10px 0; padding: 10px; border-radius: 5px; text-align: left;
+        }
+        .info-pago strong { color: #fff; display: block; margin-bottom: 2px; }
+        .info-pago span { color: #aaa; font-size: 12px; display: block; }
+        .dueño { color: var(--dorado) !important; font-size: 11px !important; font-style: italic;}
+
+        input {
+            width: 100%; padding: 10px; margin-bottom: 10px;
+            background: #020b1c; border: 1px solid #1c2e4a; color: white;
+            border-radius: 5px; box-sizing: border-box;
+        }
+
+        .btn-modal {
+            padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%;
+        }
+        .btn-guardar { background: var(--azul-btn); color: white; margin-bottom: 5px;}
+        .btn-cerrar { background: transparent; color: #888; border: 1px solid #333; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="marca-contenedor">
+            <div class="logo-estrella"></div>
+            <h1 class="titulo-principal">Bingo Asteria Perú</h1>
+        </div>
+        <div class="enlaces-web">
+            <a href="https://bingoasteriaperu.online" target="_blank">bingoasteriaperu.online <i class="fas fa-globe"></i></a>
+            <a href="https://www.facebook.com/BingoDaleAsteria" target="_blank">Fan Page <i class="fab fa-facebook"></i></a>
+        </div>
+    </header>
+
+    <nav class="nav-bar">
+        <button class="nav-btn activo" onclick="cambiarVista('inicio')" id="btn-inicio">
+            <i class="fas fa-home"></i> Inicio
+        </button>
+        <button class="nav-btn" onclick="cambiarVista('jugadores')" id="btn-jugadores">
+            <i class="fas fa-users"></i> Jugadores
+        </button>
+    </nav>
+
+    <div id="vista-inicio" class="vista activa">
+        <div class="contenedor-juego">
+            <div class="panel">
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Precio</div>
+                        <input type="number" id="config-precio" value="5" style="background:transparent; border:none; color:white; font-weight:bold; text-align:center; width:50px;">
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Celular</div>
+                        <div class="stat-val stat-clic" onclick="abrirPagos()">905 888 379 <i class="fas fa-hand-holding-dollar"></i></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Números</div>
+                        <input type="number" id="config-total" value="50" onchange="generarGrilla()" style="background:transparent; border:none; color:white; font-weight:bold; text-align:center; width:50px;">
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Hora</div>
+                        <div class="stat-val" id="reloj">--:--</div>
+                    </div>
+                </div>
+
+                <div class="zona-bola">
+                    <div class="bola-css" id="bola-anim">
+                        <div class="numero-gigante" id="num-central">--</div>
+                    </div>
+                </div>
+
+                <div class="grid-nums" id="grid-tablero"></div>
+            </div>
+
+            <div class="panel">
+                <button class="btn-modal" style="background: var(--dorado); color: black; margin-bottom: 10px;" onclick="sacarBola()">▶ INICIAR SORTEO</button>
+                <button class="btn-modal" style="background: var(--rojo-btn); color: white;" onclick="location.reload()">REINICIAR</button>
+                
+                <h4 style="color:var(--dorado); margin-top:20px; border-bottom:1px solid #333;">GANADORES</h4>
+                <div id="lista-ganadores" style="font-size:13px; color:#ccc;">
+                    Esperando...
+                </div>
+
+                <h4 style="color:var(--dorado); margin-top:20px; border-bottom:1px solid #333;">PREMIOS</h4>
+                <div id="lista-premios">
+                    <input value="1º Premio: S/ 20.00" style="margin-bottom:5px;">
+                    <input value="2º Premio: S/ 15.00">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="vista-jugadores" class="vista">
+        <div class="contenedor-tabla">
+            <h2 style="color:var(--dorado)">Gestión de Jugadores</h2>
+            <div style="margin-bottom:10px; font-size:12px; color:#888;">Aquí puedes editar los nombres o eliminar registros.</div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Nombre</th>
+                        <th>Teléfono</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-body">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-fondo" id="modal-pagos" onclick="cerrarModal(event, 'modal-pagos')">
+        <div class="modal-caja">
+            <h3 class="modal-titulo">MÉTODOS DE PAGO</h3>
+            
+            <div class="info-pago">
+                <strong><i class="fas fa-qrcode"></i> YAPE</strong>
+                <span>905 888 379</span>
+                <span class="dueño">María Cusicah</span>
+            </div>
+
+            <div class="info-pago">
+                <strong><i class="fas fa-mobile-alt"></i> PLIN</strong>
+                <span>977 192 218</span>
+                <span class="dueño">María Cusicah</span>
+            </div>
+
+            <div class="info-pago">
+                <strong><i class="fas fa-credit-card"></i> DALE</strong>
+                <span>En otros bancos</span>
+                <span class="dueño">María Cusicah</span>
+            </div>
+
+            <button class="btn-modal btn-cerrar" onclick="document.getElementById('modal-pagos').style.display='none'">Cerrar</button>
+        </div>
+    </div>
+
+    <div class="modal-fondo" id="modal-editar" onclick="cerrarModal(event, 'modal-editar')">
+        <div class="modal-caja">
+            <h3 class="modal-titulo">Editar Jugador #<span id="edit-id"></span></h3>
+            <input type="text" id="edit-nombre" placeholder="Nombre Completo">
+            <input type="text" id="edit-tel" placeholder="Teléfono">
+            <button class="btn-modal btn-guardar" onclick="guardarEdicion()">Guardar Cambios</button>
+            <button class="btn-modal btn-cerrar" onclick="document.getElementById('modal-editar').style.display='none'">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        // --- ESTADO INICIAL ---
+        let jugadores = {}; // Objeto para guardar datos { 1: {nombre: 'Juan', tel: '999...'}, ... }
+        let numerosSorteados = [];
+        let config = {
+            total: 50,
+            precio: 5
+        };
+
+        // --- NAVEGACIÓN ---
+        function cambiarVista(nombreVista) {
+            // Ocultar todas
+            document.querySelectorAll('.vista').forEach(v => v.classList.remove('activa'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('activo'));
+            
+            // Mostrar seleccionada
+            document.getElementById('vista-' + nombreVista).classList.add('activa');
+            document.getElementById('btn-' + nombreVista).classList.add('activo');
+        }
+
+        // --- RELOJ ---
+        setInterval(() => {
+            const d = new Date();
+            document.getElementById('reloj').innerText = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        }, 1000);
+
+        // --- LÓGICA DE JUEGO ---
+        function generarGrilla() {
+            const total = document.getElementById('config-total').value;
+            config.total = parseInt(total);
+            const grid = document.getElementById('grid-tablero');
+            const tbody = document.getElementById('tabla-body');
+            
+            grid.innerHTML = '';
+            tbody.innerHTML = '';
+
+            for(let i=1; i<=config.total; i++) {
+                // 1. Crear celda en el tablero de inicio
+                let div = document.createElement('div');
+                div.className = 'celda';
+                div.id = 'celda-' + i;
+                div.innerText = i;
+                grid.appendChild(div);
+
+                // 2. Crear fila en la tabla de jugadores
+                // Si no existe jugador, creamos vacío
+                if(!jugadores[i]) {
+                    jugadores[i] = { nombre: 'Disponible', tel: '-', estado: 'Libre' };
+                }
+
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${i}</td>
+                    <td id="nom-${i}">${jugadores[i].nombre}</td>
+                    <td id="tel-${i}">${jugadores[i].tel}</td>
+                    <td>${jugadores[i].estado}</td>
+                    <td>
+                        <button class="btn-accion btn-editar" onclick="editarJugador(${i})"><i class="fas fa-pen"></i></button>
+                        <button class="btn-accion btn-eliminar" onclick="eliminarJugador(${i})"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+
+        function sacarBola() {
+            if(numerosSorteados.length >= config.total) { alert("¡Bingo Terminado!"); return; }
+            
+            let num;
+            do {
+                num = Math.floor(Math.random() * config.total) + 1;
+            } while(numerosSorteados.includes(num));
+
+            numerosSorteados.push(num);
+
+            // Animación Bola
+            const bola = document.getElementById('bola-anim');
+            bola.style.transform = "scale(1.1) rotate(10deg)";
+            setTimeout(() => bola.style.transform = "scale(1) rotate(0deg)", 300);
+            
+            document.getElementById('num-central').innerText = num;
+
+            // Marcar tablero
+            const celda = document.getElementById('celda-' + num);
+            if(celda) {
+                celda.classList.add('ganador');
+                celda.scrollIntoView({behavior:"smooth", block:"center"});
+            }
+
+            // Verificar Ganador (si el jugador tiene nombre real)
+            if(jugadores[num].nombre !== 'Disponible') {
+                const ganadoresBox = document.getElementById('lista-ganadores');
+                if(ganadoresBox.innerText === 'Esperando...') ganadoresBox.innerHTML = '';
+                
+                ganadoresBox.innerHTML += `
+                    <div style="margin-bottom:5px; border-bottom:1px solid #333; padding-bottom:5px;">
+                        <strong style="color:var(--dorado)">Nº ${num} - ${jugadores[num].nombre}</strong><br>
+                        <span>Tel: ${jugadores[num].tel}</span>
+                    </div>
+                `;
+            }
+        }
+
+        // --- GESTIÓN DE JUGADORES (EDITAR / ELIMINAR) ---
+        let jugadorEditando = null;
+
+        function editarJugador(id) {
+            jugadorEditando = id;
+            document.getElementById('edit-id').innerText = id;
+            document.getElementById('edit-nombre').value = jugadores[id].nombre === 'Disponible' ? '' : jugadores[id].nombre;
+            document.getElementById('edit-tel').value = jugadores[id].tel === '-' ? '' : jugadores[id].tel;
+            
+            document.getElementById('modal-editar').style.display = 'flex';
+        }
+
+        function guardarEdicion() {
+            const nombre = document.getElementById('edit-nombre').value || 'Disponible';
+            const tel = document.getElementById('edit-tel').value || '-';
+            
+            jugadores[jugadorEditando].nombre = nombre;
+            jugadores[jugadorEditando].tel = tel;
+            jugadores[jugadorEditando].estado = nombre !== 'Disponible' ? 'Ocupado' : 'Libre';
+
+            // Actualizar tabla visualmente
+            document.getElementById(`nom-${jugadorEditando}`).innerText = nombre;
+            document.getElementById(`tel-${jugadorEditando}`).innerText = tel;
+
+            document.getElementById('modal-editar').style.display = 'none';
+        }
+
+        function eliminarJugador(id) {
+            if(confirm('¿Seguro que deseas borrar los datos del jugador #' + id + '?')) {
+                jugadores[id] = { nombre: 'Disponible', tel: '-', estado: 'Libre' };
+                document.getElementById(`nom-${id}`).innerText = 'Disponible';
+                document.getElementById(`tel-${id}`).innerText = '-';
+            }
+        }
+
+        // --- MODAL PAGOS ---
+        function abrirPagos() {
+            document.getElementById('modal-pagos').style.display = 'flex';
+        }
+
+        function cerrarModal(e, id) {
+            if(e.target.id === id) {
+                document.getElementById(id).style.display = 'none';
+            }
+        }
+
+        // Iniciar
+        generarGrilla();
+
+    </script>
+</body>
+</html>
