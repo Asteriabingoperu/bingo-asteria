@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Asteria - Final Sync</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Pacifico&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- TEMA MÁGICO --- */
+        :root {
+            --bg-deep: #1a0b2e;
+            --panel-bg: rgba(43, 20, 75, 0.95);
+            --gold: #ffd700;
+            --pink: #ff2e63;
+            --cyan: #08d9d6;
+            --white: #eaeaea;
+            --border: rgba(255, 255, 255, 0.2);
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--white);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: linear-gradient(135deg, #2a0845 0%, #6441a5 50%, #fe5196 100%);
+        }
+
+        /* EFECTO HUMO */
+        .fog-container { position: absolute; width: 100%; height: 100%; overflow: hidden; z-index: -1; }
+        .fog-img {
+            position: absolute; height: 100vh; width: 300vw; z-index: -1;
+            background: url('https://raw.githubusercontent.com/danielstuart14/CSS_FOG_ANIMATION/master/fog1.png') repeat-x;
+            background-size: contain; animation: fog 60s linear infinite; opacity: 0.3;
+        }
+        @keyframes fog { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-200vw, 0, 0); } }
+
+        /* HEADER */
+        header {
+            background: rgba(0,0,0,0.3); padding: 5px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            backdrop-filter: blur(5px); z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .titulo-magico {
+            font-family: 'Pacifico', cursive; margin: 0; font-size: 24px;
+            background: linear-gradient(to right, #fff, #ffd700);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+        }
+
+        /* BARRA SUPERIOR DE DATOS */
+        .top-bar {
+            display: grid; grid-template-columns: repeat(5, 1fr);
+            background: rgba(20, 5, 40, 0.8); padding: 8px;
+            border-bottom: 2px solid var(--gold); backdrop-filter: blur(10px); z-index: 99;
+        }
+        .top-item { text-align: center; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; justify-content: center; align-items: center;}
+        .top-item:last-child { border-right: none; }
+        .top-lbl { font-size: 9px; color: var(--cyan); text-transform: uppercase; margin-bottom: 2px; display: block; }
+        .top-val { font-weight: 900; font-size: 14px; color: white; }
+        .top-input {
+            background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: white;
+            width: 50px; text-align: center; border-radius: 4px; font-weight: bold; font-family: 'Montserrat', sans-serif;
+        }
+        
+        /* ENLACE DE PAGO CLICKABLE */
+        .celular-link {
+            color: var(--gold); text-decoration: underline; cursor: pointer; transition: 0.2s;
+        }
+        .celular-link:hover { text-shadow: 0 0 10px var(--gold); color: #fff; }
+
+        /* LAYOUT */
+        .layout {
+            display: grid; grid-template-columns: 1fr 340px;
+            height: calc(100vh - 90px); gap: 15px; padding: 15px;
+        }
+        .panel {
+            background: var(--panel-bg); border: 1px solid var(--border);
+            border-radius: 15px; padding: 15px; display: flex; flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; overflow: hidden;
+        }
+
+        /* TABLERO */
+        .grid-wrapper { flex: 1; overflow-y: auto; padding-right: 5px; margin-top: 10px;}
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; }
+        
+        .card {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; padding: 5px; display: flex; flex-direction: column;
+            align-items: center; cursor: pointer; transition: 0.2s; position: relative;
+        }
+        .card:hover { background: rgba(255,255,255,0.1); border-color: var(--cyan); }
+        
+        /* Estilos de pago en tarjeta */
+        .card.pagado { border-color: #00ff88; box-shadow: inset 0 0 5px #00ff88; }
+
+        .card-num { font-size: 18px; font-weight: 900; color: #fff; }
+        .card-name { font-size: 8px; color: #aaa; width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .stars { display: flex; gap: 2px; margin-top: 2px; }
+        .star { font-size: 7px; color: #444; }
+        .star.on { color: var(--gold); text-shadow: 0 0 5px var(--gold); transform: scale(1.3); }
+
+        .card.winner {
+            background: linear-gradient(45deg, #ffd700, #ff8c00); border: 2px solid white;
+            transform: scale(1.1); z-index: 10; box-shadow: 0 0 20px var(--gold);
+        }
+        .card.winner .card-num, .card.winner .card-name { color: black; font-weight: 900; }
+        .card.winner .star { color: black !important; }
+        .crown { display: none; position: absolute; top: -12px; color: var(--gold); font-size: 18px; animation: bounce 1s infinite; z-index: 20; text-shadow: 0 2px 4px black;}
+
+        /* BOLA 3D */
+        .ball-zone {
+            height: 150px; display: flex; justify-content: center; align-items: center;
+            background: radial-gradient(closest-side, rgba(255,255,255,0.1), transparent);
+        }
+        .ball-3d {
+            width: 120px; height: 120px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, #ff0055, #59001d);
+            box-shadow: 0 0 30px var(--pink); display: flex; align-items: center; justify-content: center;
+            border: 3px solid white; transition: transform 0.3s;
+        }
+        .ball-num { font-size: 55px; font-weight: 900; color: white; text-shadow: 2px 2px 0px #000; }
+
+        /* CONTROLES */
+        .speed-box {
+            display: flex; justify-content: center; gap: 5px; margin-bottom: 10px;
+            background: rgba(0,0,0,0.3); padding: 5px; border-radius: 20px;
+        }
+        .speed-btn {
+            background: transparent; border: 1px solid #555; color: #888;
+            padding: 2px 10px; border-radius: 15px; cursor: pointer; font-size: 10px;
+        }
+        .speed-btn.active { background: var(--cyan); color: black; font-weight: bold; border-color: var(--cyan); }
+
+        .btn-action {
+            width: 100%; padding: 12px; border: none; border-radius: 8px;
+            font-weight: 900; font-size: 14px; cursor: pointer; text-transform: uppercase;
+            margin-bottom: 8px; transition: 0.2s;
+        }
+        .btn-start { background: linear-gradient(90deg, #00f2ff, #0099ff); color: #000; box-shadow: 0 0 15px rgba(0, 242, 255, 0.4); }
+        .btn-stop { background: linear-gradient(90deg, #ff0055, #ff0000); color: #fff; display: none; box-shadow: 0 0 15px rgba(255, 0, 85, 0.4); }
+        .btn-new { background: transparent; border: 1px solid #666; color: #aaa; font-size: 11px; padding: 8px; }
+
+        /* PREMIOS (ARRIBA DERECHA) */
+        .prizes-section {
+            background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 10px; flex: 1; overflow-y: auto; max-height: 150px;
+        }
+        .prize-row { display: flex; gap: 5px; margin-bottom: 5px; }
+        .prize-input { width: 100%; background: transparent; border: 1px solid #444; color: var(--gold); padding: 5px; font-size: 11px; text-align: center; }
+        .btn-small { background: #444; color: white; border: none; cursor: pointer; border-radius: 3px; padding: 0 8px; }
+
+        /* HISTORIAL Y GANADORES */
+        .history-list {
+            height: 60px; overflow-y: auto; background: rgba(0,0,0,0.3);
+            border-radius: 5px; padding: 5px; margin-top: 10px; font-size: 10px; text-align: center; color: #ccc;
+        }
+        .winners-box {
+            font-size: 10px; color: white; margin-top: 10px; text-align: center;
+        }
+
+        /* MODALES */
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:999; justify-content:center; align-items:center; backdrop-filter: blur(5px); }
+        .modal-content { 
+            background: #1a0b2e; border: 2px solid var(--cyan); padding: 25px; border-radius: 15px; width: 320px; text-align: center; 
+            box-shadow: 0 0 40px var(--cyan);
+        }
+        input.form { width: 90%; padding: 10px; margin: 5px 0; background: #0f041c; border: 1px solid #444; color: white; border-radius: 5px; }
+        
+        .pay-info {
+            background: rgba(255,255,255,0.05); margin: 10px 0; padding: 10px;
+            border-radius: 5px; text-align: left; border-left: 3px solid var(--gold);
+        }
+        .pay-info strong { color: white; display: block; font-size: 14px; }
+        .pay-info span { color: #aaa; font-size: 12px; }
+        .owner { color: var(--gold) !important; font-size: 11px !important; font-style: italic; display: block; margin-top: 4px;}
+
+        @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-5px);} }
+        #confetti { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 999; }
+
+    </style>
+</head>
+<body>
+
+    <div class="fog-container">
+        <div class="fog-img"></div>
+    </div>
+    <canvas id="confetti"></canvas>
+
+    <header>
+        <div>
+            <h1 class="titulo-magico">Bingo Asteria</h1>
+            <div class="frase-energia">✨ Que las estrellas y el universo acompañen nuestra energía de ganar ✨</div>
+        </div>
+        <div style="text-align: right;">
+            <a href="https://bingoasteriaperu.online" target="_blank" style="color:var(--gold); font-size:11px; text-decoration:none;">bingoasteriaperu.online</a>
+        </div>
+    </header>
+
+    <div class="top-bar">
+        <div class="top-item">
+            <span class="top-lbl">PRECIO</span>
+            <input type="text" class="top-input" value="S/ 5.00">
+        </div>
+        <div class="top-item">
+            <span class="top-lbl">NÚMERO DE 🟣</span>
+            <span class="top-val celular-link" onclick="openPayment()">905 888 379</span>
+        </div>
+        <div class="top-item">
+            <span class="top-lbl">NÚMEROS A JUGAR</span>
+            <input type="number" id="cfg-total" class="top-input" value="50" onchange="initGame()">
+        </div>
+        <div class="top-item">
+            <span class="top-lbl">FECHA</span>
+            <span class="top-val">28/11/2025</span>
+        </div>
+        <div class="top-item">
+            <span class="top-lbl">HORA</span>
+            <span class="top-val" id="reloj">--:--</span>
+        </div>
+    </div>
+
+    <div class="layout">
+        
+        <div class="panel">
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:#aaa;">
+                <span>TABLERO (5 ACIERTOS)</span>
+                <span>INSCRITOS: <span id="player-count" style="color:var(--cyan)">0</span></span>
+            </div>
+
+            <div class="grid-wrapper">
+                <div class="grid" id="grid"></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            
+            <div class="prizes-section">
+                <div style="font-size:11px; color:var(--gold); margin-bottom:5px; font-weight:bold; display:flex; justify-content:space-between;">
+                    🏆 PREMIOS
+                    <button class="btn-small" onclick="addPrize()">+</button>
+                </div>
+                <div id="prizes-list"></div>
+            </div>
+
+            <div class="ball-zone">
+                <div class="ball-3d" id="ball-vis">
+                    <div class="ball-num" id="ball-val">--</div>
+                </div>
+            </div>
+
+            <div class="speed-box">
+                <span style="font-size:10px; color:#aaa; line-height:22px;">VELOCIDAD:</span>
+                <button class="speed-btn" onclick="setSpeed(3500, this)">1x</button>
+                <button class="speed-btn active" onclick="setSpeed(2500, this)">1.5x</button>
+                <button class="speed-btn" onclick="setSpeed(1500, this)">2x</button>
+            </div>
+
+            <button id="btn-start" class="btn-action btn-start" onclick="toggleAutoDraw()">INICIAR SORTEO</button>
+            <button id="btn-stop" class="btn-action btn-stop" onclick="toggleAutoDraw()">DETENER</button>
+            <button class="btn-action btn-new" onclick="location.reload()">NUEVO JUEGO</button>
+
+            <div style="font-size:10px; color:var(--cyan); margin-top:5px;">NÚMEROS SALIENTES</div>
+            <div class="history-list" id="history-box">Esperando inicio...</div>
+            
+            <div style="font-size:10px; color:var(--success); margin-top:10px;">GANADORES</div>
+            <div id="winners-list" class="winners-box"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-reg">
+        <div class="modal-content">
+            <h3 style="color:var(--cyan); margin-top:0;">REGISTRO #<span id="reg-id"></span></h3>
+            <input type="text" id="reg-name" class="form" placeholder="Nombre">
+            <input type="text" id="reg-tel" class="form" placeholder="Teléfono">
+            <div style="text-align:left; margin:10px 0; color:white; background:rgba(0,255,136,0.1); padding:10px; border-radius:5px; border:1px solid var(--success);">
+                <input type="checkbox" id="reg-paid"> <span style="font-weight:bold; color:var(--success);">PAGO CONFIRMADO</span>
+            </div>
+            <button onclick="savePlayer()" style="background:var(--cyan); color:black; border:none; padding:10px 20px; font-weight:bold; cursor:pointer; width:100%; border-radius:5px;">GUARDAR</button>
+            <button onclick="document.getElementById('modal-reg').style.display='none'" style="background:transparent; color:#888; border:1px solid #666; margin-top:10px; cursor:pointer; width:100%; padding:5px; border-radius:5px;">Cancelar</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-pay">
+        <div class="modal-content" style="border-color:var(--gold);">
+            <h3 style="color:var(--gold); margin-top:0;">MÉTODOS DE PAGO</h3>
+            <div class="pay-info">
+                <strong>YAPE: 905 888 379</strong>
+                <span class="owner">María Cusicah</span>
+            </div>
+            <div class="pay-info">
+                <strong>PLIN: 977 192 218</strong>
+                <span class="owner">María Cusicah</span>
+            </div>
+            <div class="pay-info">
+                <strong>DALE: En otros bancos</strong>
+                <span class="owner">María Cusicah</span>
+            </div>
+            <button onclick="document.getElementById('modal-pay').style.display='none'" style="background:#333; color:white; border:1px solid #555; padding:8px 20px; margin-top:10px; border-radius:5px; cursor:pointer;">CERRAR</button>
+        </div>
+    </div>
+
+    <script>
+        let totalNums = 50;
+        let players = {};
+        let counts = {};
+        let speed = 2500;
+        let timer = null;
+        let isRunning = false;
+        let drawn = [];
+        let prizes = ["1º Premio: S/ 20.00", "2º Premio: S/ 15.00"];
+        let editId = null;
+
+        // RELOJ
+        setInterval(() => {
+            const d = new Date();
+            document.getElementById('reloj').innerText = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        }, 1000);
+
+        function initGame() {
+            totalNums = parseInt(document.getElementById('cfg-total').value);
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            counts = {};
+            for(let i=1; i<=totalNums; i++) {
+                counts[i] = 0;
+                if(!players[i]) players[i] = { name: '', tel: '', paid: false };
+                
+                let card = document.createElement('div');
+                card.className = 'card';
+                card.id = 'c-'+i;
+                card.onclick = () => openReg(i);
+                renderCard(card, i);
+                grid.appendChild(card);
+            }
+            renderPrizes();
+            updateCount();
+        }
+
+        function renderCard(el, i) {
+            let p = players[i];
+            let name = p.name ? p.name : 'LIBRE';
+            let color = p.name ? 'var(--cyan)' : '#aaa';
+            
+            // Borde verde si pagó
+            if(p.paid) el.classList.add('pagado'); else el.classList.remove('pagado');
+
+            el.innerHTML = `
+                <div class="crown" id="cr-${i}"><i class="fas fa-crown"></i></div>
+                <div class="card-num">${i}</div>
+                <div class="card-name" style="color:${color}">${name}</div>
+                <div class="stars">
+                    ${[1,2,3,4,5].map(s => `<i class="fas fa-star star" id="s-${i}-${s}"></i>`).join('')}
+                </div>
+            `;
+        }
+
+        // --- REGISTRO ---
+        function openReg(id) {
+            editId = id;
+            document.getElementById('reg-id').innerText = id;
+            document.getElementById('reg-name').value = players[id].name;
+            document.getElementById('reg-tel').value = players[id].tel;
+            document.getElementById('reg-paid').checked = players[id].paid;
+            document.getElementById('modal-reg').style.display = 'flex';
+        }
+
+        function savePlayer() {
+            players[editId].name = document.getElementById('reg-name').value;
+            players[editId].tel = document.getElementById('reg-tel').value;
+            players[editId].paid = document.getElementById('reg-paid').checked;
+            
+            let card = document.getElementById('c-'+editId);
+            renderCard(card, editId);
+            updateCount();
+            document.getElementById('modal-reg').style.display = 'none';
+        }
+
+        function updateCount() {
+            let c = Object.values(players).filter(p => p.name !== '').length;
+            document.getElementById('player-count').innerText = c;
+        }
+
+        // --- PAGOS ---
+        function openPayment() {
+            document.getElementById('modal-pay').style.display = 'flex';
+        }
+
+        // --- SORTEO AUTO ---
+        function toggleAutoDraw() {
+            if(isRunning) {
+                clearInterval(timer);
+                isRunning = false;
+                document.getElementById('btn-start').style.display='block';
+                document.getElementById('btn-stop').style.display='none';
+            } else {
+                isRunning = true;
+                document.getElementById('btn-start').style.display='none';
+                document.getElementById('btn-stop').style.display='block';
+                draw();
+                timer = setInterval(draw, speed);
+            }
+        }
+
+        function setSpeed(ms, btn) {
+            speed = ms;
+            document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('active'));
+            btn.classList.add('active');
+            if(isRunning) { clearInterval(timer); timer = setInterval(draw, speed); }
+        }
+
+        function draw() {
+            // Animacion
+            let ball = document.getElementById('ball-vis');
+            ball.style.transform = "rotate(360deg) scale(1.1)";
+            setTimeout(()=>ball.style.transform="rotate(0deg) scale(1)", 300);
+
+            // Numero
+            let n = Math.floor(Math.random()*totalNums)+1;
+            document.getElementById('ball-val').innerText = n;
+            
+            // VOZ SINCRONIZADA (Cancela la anterior)
+            window.speechSynthesis.cancel();
+            speak(n.toString());
+
+            // Historial
+            drawn.unshift(n);
+            let hHtml = `<div style="color:var(--gold); font-weight:bold;">${n} (AHORA)</div>`;
+            for(let i=1; i<drawn.length && i<10; i++) {
+                hHtml += `<div>${drawn[i]} <span style="font-size:8px">(Hace ${i})</span></div>`;
+            }
+            document.getElementById('history-box').innerHTML = hHtml;
+
+            // Logica 5 aciertos
+            if(counts[n] < 5) {
+                counts[n]++;
+                let star = document.getElementById(`s-${n}-${counts[n]}`);
+                if(star) star.classList.add('on');
+
+                let c = document.getElementById('c-'+n);
+                c.scrollIntoView({behavior:"smooth", block:"center"});
+                c.style.borderColor = "var(--gold)";
+                setTimeout(()=>c.style.borderColor="rgba(255,255,255,0.1)", 800);
+
+                if(counts[n]===5) {
+                    toggleAutoDraw(); // Pausa
+                    let winnerName = players[n].name || "Sin Nombre";
+                    document.getElementById('cr-'+n).style.display='block';
+                    document.getElementById('c-'+n).classList.add('winner');
+                    document.getElementById('winners-list').innerHTML += `<div>👑 #${n} ${winnerName}</div>`;
+                    
+                    window.speechSynthesis.cancel();
+                    let winMsg = new SpeechSynthesisUtterance(`¡Tenemos un ganador! Número ${n}`);
+                    window.speechSynthesis.speak(winMsg);
+                    
+                    fireConfetti();
+                    alert(`¡GANADOR! #${n}`);
+                }
+            }
+        }
+
+        // PREMIOS
+        function renderPrizes() {
+            let html = '';
+            prizes.forEach((p, i) => {
+                html += `<div class="prize-row"><input class="prize-input" value="${p}" onchange="prizes[${i}]=this.value"> <span style="color:red; cursor:pointer;" onclick="delPrize(${i})">x</span></div>`;
+            });
+            document.getElementById('prizes-list').innerHTML = html;
+        }
+        function addPrize() { prizes.push("Nuevo Premio"); renderPrizes(); }
+        function delPrize(i) { prizes.splice(i,1); renderPrizes(); }
+
+        // VOZ
+        function speak(txt) {
+            if('speechSynthesis' in window) {
+                let msg = new SpeechSynthesisUtterance(txt);
+                msg.lang = 'es-ES'; msg.rate = 1.1;
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        // CONFETTI
+        const canvas = document.getElementById('confetti');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function fireConfetti() {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            for(let i=0; i<100; i++) particles.push({
+                x: canvas.width/2, y: canvas.height/2, vx:(Math.random()-0.5)*10, vy:(Math.random()-0.5)*10,
+                life: 150, color:`hsl(${Math.random()*360},100%,50%)`
+            });
+            loop();
+        }
+        function loop() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            particles.forEach(p=>{p.x+=p.vx; p.y+=p.vy; p.life--; ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,5,5)});
+            particles = particles.filter(p=>p.life>0);
+            if(particles.length) requestAnimationFrame(loop);
+        }
+
+        initGame();
+    </script>
+</body>
+</html>
