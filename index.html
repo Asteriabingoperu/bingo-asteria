@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bingo Asteria - Mobile Responsive</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Pacifico&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- TEMA VISUAL --- */
+        :root {
+            --bg-deep: #1a0b2e;
+            --panel-bg: rgba(43, 20, 75, 0.95);
+            --gold: #FFD700;
+            --cyan: #08d9d6;
+            --pink: #ff2e63;
+            --white: #ffffff;
+            --border: rgba(255, 255, 255, 0.2);
+            --success: #00ff88;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--white);
+            margin: 0;
+            padding: 0; /* Sin padding global para aprovechar bordes */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: linear-gradient(135deg, #2a0845 0%, #6441a5 50%, #fe5196 100%);
+        }
+
+        /* FONDO */
+        .fog-container { position: absolute; width: 100%; height: 100%; overflow: hidden; z-index: -1; }
+        .fog-img {
+            position: absolute; height: 100vh; width: 300vw; z-index: -1;
+            background: url('https://raw.githubusercontent.com/danielstuart14/CSS_FOG_ANIMATION/master/fog1.png') repeat-x;
+            background-size: contain; animation: fog 60s linear infinite; opacity: 0.3;
+        }
+        @keyframes fog { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-200vw, 0, 0); } }
+
+        /* HEADER COMPACTO */
+        header {
+            background: rgba(0,0,0,0.6); padding: 5px 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            backdrop-filter: blur(5px); z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.1);
+            height: 50px; flex-shrink: 0;
+        }
+        .titulo-magico {
+            font-family: 'Pacifico', cursive; margin: 0; font-size: 20px; /* Letra más chica */
+            background: linear-gradient(to right, #fff, #ffd700);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        /* BARRA SUPERIOR (Se adapta) */
+        .top-bar {
+            display: flex; justify-content: space-between;
+            background: rgba(0,0,0,0.6); padding: 5px;
+            border-bottom: 2px solid var(--gold); backdrop-filter: blur(10px); z-index: 99;
+            flex-wrap: wrap; /* Permite que baje si no cabe */
+            font-size: 10px;
+        }
+        .top-item { text-align: center; flex: 1; min-width: 60px; border-right: 1px solid rgba(255,255,255,0.1); }
+        .top-item:last-child { border-right: none; }
+        .top-lbl { font-size: 8px; color: var(--cyan); display: block; margin-bottom: 1px; }
+        .top-val { font-weight: 900; font-size: 12px; color: white; }
+        .top-input {
+            background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: white;
+            width: 40px; text-align: center; border-radius: 4px; font-weight: bold; font-size: 11px;
+        }
+
+        /* LAYOUT PRINCIPAL (RESPONSIVE) */
+        .layout {
+            display: grid; 
+            /* Por defecto PC: 2 columnas */
+            grid-template-columns: 1fr 340px; 
+            height: calc(100vh - 100px); 
+            gap: 10px; padding: 10px;
+            overflow: hidden;
+        }
+
+        .panel {
+            background: var(--panel-bg); border: 1px solid var(--border);
+            border-radius: 10px; padding: 10px; display: flex; flex-direction: column;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5); position: relative; overflow: hidden;
+        }
+
+        /* --- IZQUIERDA: TABLERO --- */
+        .grid-header { display: flex; justify-content: space-between; font-size: 10px; color: #aaa; margin-bottom: 5px; }
+        
+        .grid-wrapper { flex: 1; overflow-y: auto; padding-right: 2px; }
+        /* Grilla adaptable */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); gap: 5px; }
+        
+        .card {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px; padding: 3px; display: flex; flex-direction: column;
+            align-items: center; cursor: pointer; position: relative;
+        }
+        .card.pagado { box-shadow: inset 0 0 5px rgba(0, 255, 136, 0.6); border-color: var(--success); }
+
+        .card-num { font-size: 16px; font-weight: 900; color: #fff; }
+        .card-name { font-size: 8px; color: #aaa; width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .stars { display: flex; gap: 1px; margin-top: 2px; }
+        .star { font-size: 6px; color: #444; }
+        .star.on { color: var(--gold); text-shadow: 0 0 5px var(--gold); }
+
+        .card.winner {
+            background: linear-gradient(45deg, #ffd700, #ff8c00); border: 2px solid white;
+            transform: scale(1.05); z-index: 10; box-shadow: 0 0 15px var(--gold);
+        }
+        .card.winner .card-num, .card.winner .card-name { color: black; font-weight: 900; }
+        .card.winner .star { color: black !important; }
+        .crown { display: none; position: absolute; top: -10px; color: var(--gold); font-size: 16px; animation: bounce 1s infinite; z-index: 20; text-shadow: 0 2px 4px black;}
+
+        /* --- DERECHA: PREMIOS Y CONTROLES --- */
+        .prizes-container {
+            background: rgba(0,0,0,0.3); border: 1px solid var(--gold); border-radius: 8px;
+            padding: 8px; margin-bottom: 8px; max-height: 100px; overflow-y: auto;
+        }
+        .prize-header { 
+            font-size: 10px; color: var(--gold); font-weight: bold; margin-bottom: 5px; 
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .prize-row { display: flex; gap: 5px; margin-bottom: 3px; }
+        .prize-input { 
+            width: 100%; background: rgba(255,255,255,0.05); border: none; 
+            color: white; padding: 4px; font-size: 10px; text-align: center; border-radius: 4px;
+        }
+        .btn-add { background: var(--cyan); color: black; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 10px; padding: 2px 6px; }
+        .btn-del { background: #444; color: white; border: none; cursor: pointer; border-radius: 4px; font-size: 10px; }
+
+        /* BOLA 3D */
+        .ball-zone {
+            height: 120px; display: flex; justify-content: center; align-items: center;
+            background: radial-gradient(closest-side, rgba(255,255,255,0.05), transparent);
+            margin-bottom: 8px;
+        }
+        .ball-3d {
+            width: 100px; height: 100px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, #ff0055, #59001d);
+            box-shadow: 0 0 20px var(--pink); display: flex; align-items: center; justify-content: center;
+            border: 3px solid white; transition: transform 0.3s;
+        }
+        .ball-num { font-size: 45px; font-weight: 900; color: white; text-shadow: 2px 2px 0px #000; }
+
+        /* CONTROLES */
+        .speed-box {
+            display: flex; justify-content: center; gap: 5px; margin-bottom: 8px;
+            background: rgba(0,0,0,0.3); padding: 3px; border-radius: 15px;
+        }
+        .speed-btn {
+            background: transparent; border: 1px solid #555; color: #888;
+            padding: 2px 8px; border-radius: 10px; cursor: pointer; font-size: 9px;
+        }
+        .speed-btn.active { background: var(--cyan); color: black; font-weight: bold; border-color: var(--cyan); }
+
+        .btn-action {
+            width: 100%; padding: 10px; border: none; border-radius: 6px;
+            font-weight: 900; font-size: 14px; cursor: pointer; text-transform: uppercase;
+            margin-bottom: 5px; transition: 0.2s;
+        }
+        .btn-start { background: linear-gradient(90deg, #00f2ff, #0099ff); color: #000; box-shadow: 0 0 10px rgba(0, 242, 255, 0.4); }
+        .btn-stop { background: linear-gradient(90deg, #ff0055, #ff0000); color: #fff; display: none; }
+        .btn-new { background: transparent; border: 1px solid #666; color: #aaa; font-size: 10px; padding: 6px; }
+
+        /* HISTORIAL */
+        .history-list {
+            height: 50px; overflow-y: auto; background: rgba(0,0,0,0.3);
+            border-radius: 5px; padding: 3px; margin-top: 5px; font-size: 9px; text-align: center; color: #ccc;
+        }
+        .winners-box { font-size: 10px; color: var(--success); margin-top: 5px; text-align: center; height: 30px; overflow: hidden;}
+
+        /* --- MEDIA QUERIES (AJUSTE MÓVIL) --- */
+        @media (max-width: 768px) {
+            .layout {
+                grid-template-columns: 1fr; /* Una sola columna */
+                grid-template-rows: auto 1fr; /* Bola arriba, tablero abajo */
+                overflow-y: auto; /* Scroll en la página entera si hace falta */
+                display: block; /* Bloque normal para scrollear */
+                height: auto;
+            }
+            
+            /* Panel de Bola arriba en móvil */
+            .panel:nth-child(2) {
+                margin-bottom: 10px;
+                order: -1; /* Mover visualmente arriba */
+            }
+
+            .ball-zone { height: 100px; }
+            .ball-3d { width: 80px; height: 80px; }
+            .ball-num { font-size: 35px; }
+            
+            .grid {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); /* Tarjetas más pequeñas */
+            }
+            
+            .top-bar { font-size: 9px; flex-wrap: wrap; }
+            .top-item { padding: 2px; }
+        }
+
+        /* MODALES */
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:999; justify-content:center; align-items:center; backdrop-filter: blur(5px); }
+        .modal-content { 
+            background: #1a0b2e; border: 2px solid var(--cyan); padding: 20px; border-radius: 15px; width: 90%; max-width: 320px; text-align: center; 
+            box-shadow: 0 0 30px var(--cyan);
+        }
+        .form-input { 
+            width: 100%; padding: 10px; background: #0f041c; border: 1px solid #444; 
+            color: white; border-radius: 5px; box-sizing: border-box; font-family: 'Montserrat', sans-serif; margin-bottom: 10px;
+        }
+        
+        .btn-save { background: var(--cyan); color: black; border: none; padding: 10px; width: 100%; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        .btn-cancel { background: transparent; color: #888; border: 1px solid #444; padding: 8px; width: 100%; border-radius: 5px; cursor: pointer; margin-top: 5px;}
+
+        /* WINNER OVERLAY */
+        #winner-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 2000; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+        }
+        .win-title { font-family: 'Pacifico', cursive; font-size: 40px; color: var(--gold); margin: 0; text-shadow: 0 0 20px var(--gold); animation: bounce 1s infinite; }
+        .win-info { font-size: 20px; color: white; margin: 20px 0; font-weight: 900; }
+        .btn-close-win { background: var(--pink); color: white; border: none; padding: 10px 30px; font-size: 16px; border-radius: 30px; cursor: pointer; font-weight: bold; }
+
+        @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+        #confetti { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 1500; }
+
+    </style>
+</head>
+<body>
+
+    <div class="fog-container">
+        <div class="fog-img"></div>
+    </div>
+    <canvas id="confetti"></canvas>
+
+    <header>
+        <div>
+            <h1 class="titulo-magico">Bingo Asteria</h1>
+        </div>
+        <div style="text-align: right;">
+            <a href="https://bingoasteriaperu.online" target="_blank" style="color:var(--gold); font-size:10px; text-decoration:none;">bingoasteriaperu.online</a>
+        </div>
+    </header>
+
+    <div class="top-bar">
+        <div class="top-item">
+            <span class="top-lbl">PRECIO</span>
+            <input type="text" class="top-input" value="S/ 5.00">
+        </div>
+        <div class="top-item">
+            <span class="top-lbl">NÚMERO DE 🟣</span>
+            <span class="top-val celular-link" onclick="openPayment()" style="cursor:pointer; text-decoration:underline; color:var(--gold);">905 888 379</span>
+        </div>
+        <div class="top-item">
+            <span class="top-lbl">NÚMEROS</span>
+            <input type="number" id="cfg-total" class="top-input" value="50" onchange="initGame()">
+        </div>
+        <div class="top-item">
+            <span class="top-lbl">FECHA</span>
+            <span class="top-val" style="font-size:11px;">29/11/2025</span>
+        </div>
+        <div class="top-item">
+            <span class="top-lbl">HORA</span>
+            <span class="top-val" id="reloj" style="font-size:11px;">--:--</span>
+        </div>
+    </div>
+
+    <div class="layout">
+        
+        <div class="panel">
+            
+            <div class="prizes-container">
+                <div class="prize-header">
+                    🏆 PREMIOS
+                    <button class="btn-add" onclick="addPrize()">+</button>
+                </div>
+                <div id="prizes-list"></div>
+            </div>
+
+            <div class="ball-zone">
+                <div class="ball-3d" id="ball-vis">
+                    <div class="ball-num" id="ball-val">--</div>
+                </div>
+            </div>
+
+            <div class="speed-box">
+                <span style="font-size:9px; color:#aaa; line-height:20px;">VELOCIDAD:</span>
+                <button class="speed-btn" onclick="setSpeed(3500, this)">1x</button>
+                <button class="speed-btn active" onclick="setSpeed(2500, this)">1.5x</button>
+                <button class="speed-btn" onclick="setSpeed(1500, this)">2x</button>
+            </div>
+
+            <button id="btn-start" class="btn-action btn-start" onclick="toggleAutoDraw()">INICIAR SORTEO</button>
+            <button id="btn-stop" class="btn-action btn-stop" onclick="toggleAutoDraw()">DETENER</button>
+            <button class="btn-action btn-new" onclick="location.reload()">NUEVO JUEGO</button>
+
+            <div style="font-size:9px; color:var(--cyan); margin-top:5px;">NÚMEROS SALIENTES</div>
+            <div class="history-list" id="history-box">...</div>
+            <div class="winners-box" id="winners-list">GANADORES: 0</div>
+        </div>
+
+        <div class="panel">
+            <div class="grid-header">
+                <span>TABLERO (5 ACIERTOS)</span>
+                <span>INSCRITOS: <span id="player-count" style="color:var(--cyan); font-weight:bold;">0</span></span>
+            </div>
+
+            <div class="grid-wrapper">
+                <div class="grid" id="grid"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal" id="modal-reg">
+        <div class="modal-content">
+            <h3 style="color:var(--cyan); margin-top:0;">REGISTRO #<span id="reg-id"></span></h3>
+            <input type="text" id="reg-name" class="form-input" placeholder="Nombre completo">
+            <input type="text" id="reg-tel" class="form-input" placeholder="Teléfono">
+            
+            <div style="text-align:left; margin:10px 0; color:white;">
+                <input type="checkbox" id="reg-paid"> <span style="font-weight:bold; color:var(--success); font-size:12px;">PAGO CONFIRMADO</span>
+            </div>
+
+            <button onclick="savePlayer()" class="btn-save">GUARDAR</button>
+            <button onclick="document.getElementById('modal-reg').style.display='none'" class="btn-cancel">Cancelar</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-pay">
+        <div class="modal-content" style="border-color:var(--gold);">
+            <h3 style="color:var(--gold); margin-top:0;">MÉTODOS DE PAGO</h3>
+            <div style="background:rgba(255,255,255,0.05); margin:5px 0; padding:8px; border-radius:5px; text-align:left; border-left:3px solid var(--gold);">
+                <strong style="color:white; font-size:14px;">YAPE: 905 888 379</strong><br>
+                <small style="color:var(--gold);">María Cusicah</small>
+            </div>
+            <div style="background:rgba(255,255,255,0.05); margin:5px 0; padding:8px; border-radius:5px; text-align:left; border-left:3px solid var(--gold);">
+                <strong style="color:white; font-size:14px;">PLIN: 977 192 218</strong><br>
+                <small style="color:var(--gold);">María Cusicah</small>
+            </div>
+            <div style="background:rgba(255,255,255,0.05); margin:5px 0; padding:8px; border-radius:5px; text-align:left; border-left:3px solid var(--gold);">
+                <strong style="color:white; font-size:14px;">DALE: En otros bancos</strong><br>
+                <small style="color:var(--gold);">María Cusicah</small>
+            </div>
+            <button onclick="document.getElementById('modal-pay').style.display='none'" class="btn-cancel" style="margin-top:10px; color:white; border-color:white;">CERRAR</button>
+        </div>
+    </div>
+
+    <div id="winner-overlay">
+        <h1 class="win-title">¡TENEMOS UN GANADOR!</h1>
+        <div class="win-info" id="win-details"></div>
+        <button class="btn-close-win" onclick="document.getElementById('winner-overlay').style.display='none'">CONTINUAR</button>
+    </div>
+
+    <script>
+        let totalNums = 50;
+        let players = {};
+        let counts = {};
+        let speed = 2500;
+        let timer = null;
+        let isRunning = false;
+        let drawn = [];
+        let prizes = ["1º Premio: S/ 20.00", "2º Premio: S/ 15.00"];
+        let editId = null;
+
+        // RELOJ
+        setInterval(() => {
+            const d = new Date();
+            document.getElementById('reloj').innerText = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        }, 1000);
+
+        // INICIALIZACION
+        function initGame() {
+            totalNums = parseInt(document.getElementById('cfg-total').value);
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            counts = {};
+            
+            for(let i=1; i<=totalNums; i++) {
+                counts[i] = 0;
+                if(!players[i]) players[i] = { name: '', tel: '', paid: false };
+
+                let card = document.createElement('div');
+                card.className = 'card';
+                card.id = 'c-'+i;
+                card.onclick = () => openReg(i); 
+                
+                renderCard(card, i);
+                grid.appendChild(card);
+            }
+            updatePlayerCount();
+            renderPrizes();
+        }
+
+        function renderCard(el, i) {
+            let p = players[i];
+            let name = p.name ? p.name : 'LIBRE';
+            let color = p.name ? 'var(--cyan)' : '#aaa';
+            
+            if(p.paid) el.classList.add('pagado'); else el.classList.remove('pagado');
+
+            el.innerHTML = `
+                <div class="crown" id="cr-${i}"><i class="fas fa-crown"></i></div>
+                <div class="card-num">${i}</div>
+                <div class="card-name" style="color:${color}">${name}</div>
+                <div class="stars">
+                    ${[1,2,3,4,5].map(s => `<i class="fas fa-star star" id="s-${i}-${s}"></i>`).join('')}
+                </div>
+            `;
+        }
+
+        // --- REGISTRO ---
+        function openReg(id) {
+            editId = id;
+            document.getElementById('reg-id').innerText = id;
+            document.getElementById('reg-name').value = players[id].name;
+            document.getElementById('reg-tel').value = players[id].tel;
+            document.getElementById('reg-paid').checked = players[id].paid;
+            document.getElementById('modal-reg').style.display = 'flex';
+        }
+
+        function savePlayer() {
+            players[editId].name = document.getElementById('reg-name').value;
+            players[editId].tel = document.getElementById('reg-tel').value;
+            players[editId].paid = document.getElementById('reg-paid').checked;
+            
+            let card = document.getElementById('c-'+editId);
+            renderCard(card, editId);
+            updatePlayerCount();
+            document.getElementById('modal-reg').style.display = 'none';
+        }
+
+        function updatePlayerCount() {
+            let c = Object.values(players).filter(p => p.name !== '').length;
+            document.getElementById('player-count').innerText = c;
+        }
+
+        // --- SORTEO ---
+        function toggleAutoDraw() {
+            if(isRunning) {
+                clearInterval(timer);
+                isRunning = false;
+                document.getElementById('btn-start').style.display='block';
+                document.getElementById('btn-stop').style.display='none';
+            } else {
+                isRunning = true;
+                document.getElementById('btn-start').style.display='none';
+                document.getElementById('btn-stop').style.display='block';
+                draw();
+                timer = setInterval(draw, speed);
+            }
+        }
+
+        function setSpeed(ms, btn) {
+            speed = ms;
+            document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('active'));
+            btn.classList.add('active');
+            if(isRunning) { clearInterval(timer); timer = setInterval(draw, speed); }
+        }
+
+        function draw() {
+            let ball = document.getElementById('ball-vis');
+            ball.style.transform = "rotate(360deg) scale(1.1)";
+            setTimeout(()=>ball.style.transform="rotate(0deg) scale(1)", 300);
+
+            let n = Math.floor(Math.random()*totalNums)+1;
+            document.getElementById('ball-val').innerText = n;
+            
+            window.speechSynthesis.cancel();
+            speak(n.toString());
+
+            drawn.unshift(n);
+            let hHtml = `<div style="color:var(--gold); font-weight:bold;">${n} (AHORA)</div>`;
+            for(let i=1; i<drawn.length && i<10; i++) {
+                hHtml += `<div class="history-item">${drawn[i]} <span style="font-size:8px;">(Hace ${i})</span></div>`;
+            }
+            document.getElementById('history-box').innerHTML = hHtml;
+
+            if(counts[n] < 5) {
+                counts[n]++;
+                let star = document.getElementById(`s-${n}-${counts[n]}`);
+                if(star) star.classList.add('on');
+
+                let c = document.getElementById('c-'+n);
+                c.scrollIntoView({behavior:"smooth", block:"center"});
+                c.style.borderColor = "var(--gold)";
+                setTimeout(()=>c.style.borderColor="rgba(255,255,255,0.1)", 800);
+
+                if(counts[n]===5) {
+                    toggleAutoDraw(); 
+                    let winnerName = players[n].name || "Sin Nombre";
+                    document.getElementById('cr-'+n).style.display='block';
+                    document.getElementById('c-'+n).classList.add('winner');
+                    
+                    document.getElementById('winners-list').innerHTML += `<div>👑 #${n} ${winnerName}</div>`;
+
+                    window.speechSynthesis.cancel();
+                    let winMsg = new SpeechSynthesisUtterance(`¡Tenemos un ganador! Número ${n}`);
+                    window.speechSynthesis.speak(winMsg);
+                    
+                    document.getElementById('win-details').innerHTML = `NÚMERO ${n}<br><span style="font-size:20px; color:var(--cyan)">${winnerName}</span>`;
+                    document.getElementById('winner-overlay').style.display = 'flex';
+                    fireConfetti();
+                }
+            }
+        }
+
+        function renderPrizes() {
+            let html = '';
+            prizes.forEach((p, i) => {
+                html += `<div class="prize-row"><input class="prize-input" value="${p}" onchange="prizes[${i}]=this.value"> <button class="btn-del" onclick="delPrize(${i})">X</button></div>`;
+            });
+            document.getElementById('prizes-list').innerHTML = html;
+        }
+        function addPrize() { prizes.push("Nuevo Premio"); renderPrizes(); }
+        function delPrize(i) { prizes.splice(i,1); renderPrizes(); }
+
+        function speak(txt) {
+            if('speechSynthesis' in window) {
+                let msg = new SpeechSynthesisUtterance(txt);
+                msg.lang = 'es-ES'; msg.rate = 1.1; window.speechSynthesis.speak(msg);
+            }
+        }
+
+        function openPayment() { document.getElementById('modal-pay').style.display='flex'; }
+
+        const canvas = document.getElementById('confetti');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function fireConfetti() {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            for(let i=0; i<150; i++) particles.push({
+                x: canvas.width/2, y: canvas.height/2, vx:(Math.random()-0.5)*12, vy:(Math.random()-0.5)*12,
+                life: 150, color:`hsl(${Math.random()*360},100%,50%)`
+            });
+            loop();
+        }
+        function loop() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            particles.forEach(p=>{p.x+=p.vx; p.y+=p.vy; p.life--; ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,5,5)});
+            particles = particles.filter(p=>p.life>0);
+            if(particles.length) requestAnimationFrame(loop);
+        }
+
+        initGame();
+    </script>
+</body>
+</html>
