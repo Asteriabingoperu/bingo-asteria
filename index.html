@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bingo Asteria - White Inputs</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Pacifico&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-deep: #0a0118;
+            --panel-bg: rgba(20, 10, 35, 0.95);
+            --gold: #FFD700;
+            --cyan: #00f2ff;
+            --pink: #ff0055;
+            --white: #ffffff;
+            --border: rgba(255, 215, 0, 0.3);
+            --success: #00ff88;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--white);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-y: auto !important; 
+            background-image: radial-gradient(circle at 50% 30%, #2a0845 0%, #000000 100%);
+            display: block !important;
+        }
+
+        /* FONDO */
+        .fog-container { position: fixed; width: 100%; height: 100%; z-index: -1; pointer-events: none; top:0; left:0;}
+        
+        /* HEADER */
+        header {
+            background: rgba(0,0,0,0.9); padding: 10px 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .titulo-magico { font-family: 'Pacifico', cursive; margin: 0; font-size: 20px; color: var(--gold); }
+
+        /* BARRA DATOS */
+        .top-bar {
+            display: flex; flex-wrap: wrap; justify-content: space-between;
+            background: rgba(10, 5, 20, 0.95); padding: 5px;
+            border-bottom: 2px solid var(--gold); 
+            position: sticky; top: 50px; z-index: 90;
+        }
+        .top-item { 
+            text-align: center; flex: 1; min-width: 60px; 
+            border-right: 1px solid rgba(255,255,255,0.1); padding: 2px;
+        }
+        .top-lbl { font-size: 8px; color: var(--cyan); display: block; margin-bottom: 1px; font-weight:bold;}
+        .top-val { font-weight: 900; font-size: 13px; color: white; }
+        
+        .pay-btn-top {
+            background: var(--gold); color: black; padding: 4px 10px; border-radius: 4px;
+            font-size: 12px; font-weight: bold; cursor: pointer; display: inline-block; 
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        .top-input {
+            background: rgba(255,255,255,0.1); border: 1px solid #555; color: white;
+            width: 40px; text-align: center; border-radius: 4px; font-weight: bold; font-size: 12px;
+        }
+
+        /* LAYOUT */
+        .layout { padding: 10px; display: block; }
+
+        .panel {
+            background: var(--panel-bg); border: 1px solid var(--border);
+            border-radius: 12px; padding: 10px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+
+        @media (min-width: 769px) {
+            .layout { display: grid; grid-template-columns: 1fr 340px; height: calc(100vh - 120px); overflow: hidden; }
+            .panel { height: 100%; overflow: hidden; display: flex; flex-direction: column; margin-bottom: 0; }
+            .grid-wrapper { flex: 1; overflow-y: auto; }
+            body { overflow: hidden; } 
+        }
+
+        /* TABLERO */
+        .grid-header { display: flex; justify-content: space-between; font-size: 10px; color: #aaa; margin-bottom: 10px; }
+        .grid-wrapper { width: 100%; min-height: 400px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 5px; padding-bottom: 20px; }
+        
+        .card {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px; padding: 4px; display: flex; flex-direction: column;
+            align-items: center; cursor: pointer; position: relative;
+        }
+        .card.pagado { border-color: var(--success); box-shadow: inset 0 0 5px rgba(0,255,136,0.3); }
+        .card-num { font-size: 18px; font-weight: 900; color: #fff; }
+        .card-name { font-size: 9px; color: #aaa; width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .stars { display: flex; gap: 1px; margin-top: 2px; }
+        .star { font-size: 7px; color: #444; }
+        .star.on { color: var(--gold); }
+
+        .card.winner {
+            background: linear-gradient(45deg, #ffd700, #ff8c00); border: 2px solid white;
+            transform: scale(1.05); z-index: 10; box-shadow: 0 0 15px var(--gold);
+        }
+        .card.winner .card-num, .card.winner .card-name { color: black; font-weight: 900; }
+        .card.winner .star { color: black !important; }
+        .crown { display: none; position: absolute; top: -10px; color: var(--gold); font-size: 16px; animation: bounce 1s infinite; z-index: 20; text-shadow: 0 2px 4px black;}
+
+        @media (max-width: 768px) {
+            .layout { display: flex; flex-direction: column; }
+            .panel-right { order: -1; } 
+            .grid-wrapper { height: 400px; min-height: 400px; }
+        }
+
+        /* BOLA */
+        .ball-zone {
+            height: 140px; display: flex; justify-content: center; align-items: center;
+            background: radial-gradient(closest-side, rgba(255,255,255,0.05), transparent);
+            margin-bottom: 10px;
+        }
+        .ball-3d {
+            width: 110px; height: 110px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, #ff0055, #59001d);
+            box-shadow: 0 0 20px var(--pink); display: flex; align-items: center; justify-content: center;
+            border: 3px solid white; transition: transform 0.2s;
+        }
+        .ball-num { font-size: 50px; font-weight: 900; color: white; text-shadow: 2px 2px 0px #000; }
+
+        /* PREMIOS */
+        .prizes-box {
+            background: rgba(0,0,0,0.3); border: 1px solid var(--gold); border-radius: 8px;
+            padding: 5px; margin-bottom: 5px; max-height: 80px; overflow-y: auto;
+        }
+        .prize-row { display: flex; gap: 5px; margin-bottom: 2px; }
+        .prize-input { width: 100%; background: transparent; border: none; color: white; font-size: 11px; text-align: center; border-bottom: 1px solid #444; }
+        
+        .btn-action {
+            width: 100%; padding: 12px; border: none; border-radius: 8px;
+            font-weight: 900; font-size: 16px; cursor: pointer; text-transform: uppercase;
+            margin-bottom: 5px; transition: 0.1s;
+        }
+        .btn-start { background: linear-gradient(90deg, #00f2ff, #0099ff); color: #000; box-shadow: 0 0 10px rgba(0,242,255,0.3); }
+        .btn-stop { background: #ff0055; color: white; display: none; }
+        .btn-add { background: var(--success); color: black; border: none; border-radius: 50%; width: 20px; height: 20px; font-weight: bold; cursor: pointer; padding: 0;}
+        .btn-del { background: #444; color: white; border: none; cursor: pointer; border-radius: 4px; padding: 0 5px; }
+
+        /* MODALES CORREGIDOS (BLANCO Y VISIBLE) */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            z-index: 99999; 
+            left: 0; top: 0; width: 100%; height: 100%; 
+            background-color: rgba(0,0,0,0.9);
+            justify-content: center; /* Centrado horizontal */
+            align-items: center; /* Centrado vertical */
+        }
+
+        .modal-content {
+            background-color: #150a25;
+            padding: 25px;
+            border: 2px solid var(--cyan);
+            width: 85%;
+            max-width: 350px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(0, 242, 255, 0.4);
+            animation: zoomIn 0.3s ease;
+        }
+
+        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* INPUTS BLANCOS BRILLANTES */
+        .form-input { 
+            width: 100%; 
+            padding: 15px; 
+            margin-bottom: 12px; 
+            background: #ffffff; /* FONDO BLANCO */
+            border: 2px solid #ccc; 
+            color: #000000; /* LETRA NEGRA */
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .form-input::placeholder { color: #888; }
+
+        .btn-save { background: var(--cyan); color: black; width: 100%; padding: 12px; font-weight: bold; border: none; border-radius: 8px; font-size: 16px; margin-top: 10px;}
+        .btn-close { background: #444; color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; margin-top: 5px; cursor: pointer;}
+
+        .pay-number { font-size: 22px; font-weight: 900; color: var(--gold); display: block; margin: 5px 0; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 5px; }
+
+        #confetti { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 2000; }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti"></canvas>
+
+    <header>
+        <div class="titulo-magico">Bingo Asteria</div>
+        <a href="https://bingoasteriaperu.online" target="_blank" style="color:var(--gold); font-size:10px; text-decoration:none;">bingoasteriaperu.online</a>
+    </header>
+
+    <div class="top-bar">
+        <div class="top-item"><span class="top-lbl">PRECIO</span><input type="text" class="top-input" value="5"></div>
+        <div class="top-item" style="flex: 1.5;"><span class="top-lbl">PAGAR AQUI</span><div class="pay-btn-top" onclick="openModal('modal-pay')">CLICK 905 888 379</div></div>
+        <div class="top-item"><span class="top-lbl">NÚMEROS</span><input type="number" id="cfg-total" class="top-input" value="50" onchange="initGame()"></div>
+        <div class="top-item"><span class="top-lbl">FECHA</span><span class="top-val" style="font-size:11px;">29/11</span></div>
+        <div class="top-item"><span class="top-lbl">HORA</span><span class="top-val" id="reloj" style="font-size:11px;">--:--</span></div>
+    </div>
+
+    <div class="layout">
+        <div class="panel panel-right">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:11px; color:var(--gold); font-weight:bold;">
+                <span>🏆 PREMIOS</span> <button class="btn-add" onclick="addPrize()">+</button>
+            </div>
+            <div class="prizes-box" id="prizes-list"></div>
+
+            <div class="ball-zone">
+                <div class="ball-3d" id="ball-vis"><div class="ball-num" id="ball-val">--</div></div>
+            </div>
+
+            <div style="display:flex; gap:5px; justify-content:center; margin-bottom:8px;">
+                <button class="speed-btn active" onclick="setSpeed(2000, this)" style="background:var(--cyan); border:none; padding:2px 8px; border-radius:15px; font-size:10px;">NORMAL</button>
+                <button class="speed-btn" onclick="setSpeed(1000, this)" style="background:transparent; border:1px solid #555; color:#aaa; padding:2px 8px; border-radius:15px; font-size:10px;">RÁPIDO</button>
+            </div>
+
+            <button id="btn-start" class="btn-action btn-start" onclick="toggleAutoDraw()">INICIAR SORTEO</button>
+            <button id="btn-stop" class="btn-action btn-stop" onclick="toggleAutoDraw()">PAUSAR</button>
+            <button onclick="location.reload()" style="background:transparent; border:none; color:#666; font-size:10px; width:100%; cursor:pointer;">REINICIAR TODO</button>
+
+            <div style="font-size:10px; color:var(--cyan); margin-top:10px; text-align:center;">ÚLTIMOS NÚMEROS</div>
+            <div id="history-box" style="font-size:11px; text-align:center; color:#ddd; min-height:20px;">...</div>
+            <div style="font-size:10px; color:var(--success); margin-top:5px; text-align:center;">GANADORES</div>
+            <div id="winners-list" style="font-size:11px; color:white; text-align:center;">0</div>
+        </div>
+
+        <div class="panel panel-left">
+            <div class="grid-header">
+                <span>TABLERO (5 ACIERTOS)</span>
+                <span>INSCRITOS: <span id="player-count" style="color:var(--cyan)">0</span></span>
+            </div>
+            <div class="grid-wrapper">
+                <div class="grid" id="grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-reg" class="modal">
+        <div class="modal-content">
+            <h3 style="color:var(--cyan); margin-top:0;">REGISTRO #<span id="reg-id"></span></h3>
+            
+            <input type="text" id="reg-name" class="form-input" placeholder="Ingresa Nombre...">
+            <input type="text" id="reg-tel" class="form-input" placeholder="Ingresa Teléfono...">
+            
+            <div style="text-align:left; margin-bottom:15px; color:white; padding:10px; background:rgba(0,255,136,0.1); border-radius:5px;">
+                <input type="checkbox" id="reg-paid" style="transform: scale(1.5); margin-right: 10px;"> 
+                <span style="font-weight:bold; color:var(--success);">PAGO CONFIRMADO</span>
+            </div>
+
+            <button onclick="savePlayer()" class="btn-save">GUARDAR</button>
+            <button onclick="closeModal('modal-reg')" class="btn-close">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="modal-pay" class="modal">
+        <div class="modal-content" style="border-color:var(--gold);">
+            <h2 style="color:var(--gold); margin-top:0;">💸 PAGOS</h2>
+            <div style="margin-bottom:15px;"><span style="color:white;">YAPE</span><div class="pay-number">905 888 379</div><small style="color:#aaa;">María Cusicah</small></div>
+            <div style="margin-bottom:15px;"><span style="color:white;">PLIN</span><div class="pay-number">977 192 218</div><small style="color:#aaa;">María Cusicah</small></div>
+            <div style="margin-bottom:15px;"><span style="color:white;">DALE</span><div class="pay-number" style="font-size:18px;">En otros bancos</div><small style="color:#aaa;">María Cusicah</small></div>
+            <button onclick="closeModal('modal-pay')" class="btn-save" style="background:#333; color:white;">CERRAR</button>
+        </div>
+    </div>
+
+    <div id="modal-win" class="modal">
+        <div class="modal-content" style="border-color:var(--gold); box-shadow:0 0 50px var(--gold);">
+            <h1 style="color:var(--gold); font-family:'Pacifico'; font-size:40px; margin:0;">¡GANADOR!</h1>
+            <div id="win-info" style="font-size:24px; color:white; margin:20px 0; font-weight:900;"></div>
+            <button onclick="closeModal('modal-win')" class="btn-save" style="background:var(--pink); color:white;">CONTINUAR</button>
+        </div>
+    </div>
+
+    <script>
+        let totalNums=50, players={}, counts={}, speed=2000, timer=null, isRunning=false, drawn=[], prizes=["1º Premio: S/ 20.00", "2º Premio: S/ 15.00"], editId=null;
+
+        setInterval(() => document.getElementById('reloj').innerText=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), 1000);
+
+        function initGame(){
+            totalNums=parseInt(document.getElementById('cfg-total').value);
+            const grid=document.getElementById('grid'); grid.innerHTML=''; counts={};
+            for(let i=1; i<=totalNums; i++){
+                counts[i]=0; if(!players[i]) players[i]={name:'',tel:'',paid:false};
+                let c=document.createElement('div'); c.className='card'; c.id='c-'+i; c.onclick=()=>openReg(i);
+                renderCard(c,i); grid.appendChild(c);
+            }
+            renderPrizes(); updateCount();
+        }
+
+        function renderCard(el, i){
+            let p=players[i], name=p.name||'LIBRE', color=p.name?'var(--cyan)':'#aaa';
+            if(p.paid) el.classList.add('pagado'); else el.classList.remove('pagado');
+            el.innerHTML=`<div class="crown" id="cr-${i}"><i class="fas fa-crown"></i></div><div class="card-num">${i}</div><div class="card-name" style="color:${color}">${name}</div><div class="stars">${[1,2,3,4,5].map(s=>`<i class="fas fa-star star" id="s-${i}-${s}"></i>`).join('')}</div>`;
+        }
+
+        function openReg(id){ editId=id; document.getElementById('reg-id').innerText=id; document.getElementById('reg-name').value=players[id].name; document.getElementById('reg-tel').value=players[id].tel; document.getElementById('reg-paid').checked=players[id].paid; openModal('modal-reg'); }
+        function savePlayer(){ players[editId].name=document.getElementById('reg-name').value; players[editId].tel=document.getElementById('reg-tel').value; players[editId].paid=document.getElementById('reg-paid').checked; renderCard(document.getElementById('c-'+editId), editId); updateCount(); closeModal('modal-reg'); }
+        function updateCount(){ document.getElementById('player-count').innerText=Object.values(players).filter(p=>p.name).length; }
+
+        function toggleAutoDraw(){
+            if(isRunning){ clearInterval(timer); isRunning=false; document.getElementById('btn-start').style.display='block'; document.getElementById('btn-stop').style.display='none'; }
+            else{ isRunning=true; document.getElementById('btn-start').style.display='none'; document.getElementById('btn-stop').style.display='block'; draw(); timer=setInterval(draw, speed); }
+        }
+
+        function setSpeed(ms, btn){
+            speed = ms; document.querySelectorAll('.speed-btn').forEach(b=>b.style.background='transparent');
+            btn.style.background='var(--cyan)'; if(isRunning){ clearInterval(timer); timer=setInterval(draw, speed); }
+        }
+
+        function draw(){
+            let ball=document.getElementById('ball-vis'); ball.style.transform="rotate(360deg) scale(1.1)"; setTimeout(()=>ball.style.transform="rotate(0deg) scale(1)",300);
+            let n=Math.floor(Math.random()*totalNums)+1; document.getElementById('ball-val').innerText=n;
+            
+            window.speechSynthesis.cancel(); speak(n.toString());
+
+            drawn.unshift(n); document.getElementById('history-box').innerText=drawn.slice(0,5).join(" - ");
+
+            if(counts[n]<5){
+                counts[n]++; document.getElementById(`s-${n}-${counts[n]}`).classList.add('on');
+                let c=document.getElementById('c-'+n); c.scrollIntoView({behavior:"smooth",block:"center"});
+                c.style.borderColor="var(--gold)"; setTimeout(()=>c.style.borderColor="rgba(255,255,255,0.1)",800);
+
+                if(counts[n]===5){
+                    toggleAutoDraw(); let name=players[n].name||"Sin Nombre";
+                    document.getElementById('cr-'+n).style.display='block'; document.getElementById('c-'+n).classList.add('winner');
+                    document.getElementById('winners-list').innerHTML += `<div>👑 #${n} ${name}</div>`;
+                    window.speechSynthesis.cancel(); speak("¡Tenemos un ganador! Número "+n);
+                    document.getElementById('win-info').innerHTML=`#${n}<br><span style="color:var(--cyan)">${name}</span>`;
+                    openModal('modal-win'); fireConfetti();
+                }
+            }
+        }
+
+        function renderPrizes(){
+            let html=''; prizes.forEach((p,i)=>html+=`<div class="prize-row"><input class="prize-input" value="${p}" onchange="prizes[${i}]=this.value"><button class="btn-del" onclick="prizes.splice(${i},1);renderPrizes()">X</button></div>`);
+            document.getElementById('prizes-list').innerHTML=html;
+        }
+        function addPrize(){ prizes.push("Nuevo Premio"); renderPrizes(); }
+        function delPrize(i){ prizes.splice(i,1); renderPrizes(); }
+
+        function speak(txt){ if('speechSynthesis' in window){ let msg=new SpeechSynthesisUtterance(txt); msg.lang='es-ES'; msg.rate=1.1; window.speechSynthesis.speak(msg); } }
+        function openModal(id){ document.getElementById(id).style.display='flex'; }
+        function closeModal(id){ document.getElementById(id).style.display='none'; }
+
+        const canvas=document.getElementById('confetti'), ctx=canvas.getContext('2d'); let particles=[];
+        function fireConfetti(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; for(let i=0;i<150;i++) particles.push({x:canvas.width/2,y:canvas.height/2,vx:(Math.random()-0.5)*12,vy:(Math.random()-0.5)*12,life:150,color:`hsl(${Math.random()*360},100%,50%)`}); loop(); }
+        function loop(){ ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p=>{p.x+=p.vx; p.y+=p.vy; p.life--; ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,5,5)}); particles=particles.filter(p=>p.life>0); if(particles.length) requestAnimationFrame(loop); }
+
+        initGame();
+    </script>
+</body>
+</html>
