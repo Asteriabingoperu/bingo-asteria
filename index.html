@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Bingo Asteria - FINAL (Wix Ready)</title>
+
+<!-- (Puedes conservar tus fuentes si quieres; no son obligatorias) -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Rye&family=Orbitron:wght@900&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --gold: #FFD700;
+  --cyan: #00ffff;
+  --deep-bg: #000510;
+  --pink-ball: radial-gradient(circle at 35% 35%, #ffffff 0%, #ff69b4 20%, #ff1493 50%, #8b008b 100%);
+}
+
+/* Reset / base */
+*{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+html,body{height:100%; margin:0; padding:0; font-family: 'Montserrat', sans-serif; background:var(--deep-bg); color:#fff; overflow:hidden;}
+#app-wrapper{width:100%; height:100%; position:relative;}
+
+/* coins background (non clickable) */
+#coins-layer{position:fixed; inset:0; z-index:0; pointer-events:none; background:radial-gradient(circle at 50% 20%, #002b4d 0%, #000 90%); overflow:hidden;}
+.coin{position:absolute; width:65px; height:65px; border-radius:50%; background:radial-gradient(circle, #FFD700 50%, #DAA520 55%, #C0C0C0 56%, #808080 100%); border:1px solid #444; display:flex; align-items:center; justify-content:center; box-shadow:0 0 15px rgba(0,0,0,0.8); opacity:0.6; bottom:-80px; animation: floatUp linear infinite;}
+@keyframes floatUp{0%{transform:translateY(0) rotate(0deg)}100%{transform:translateY(-120vh) rotate(360deg)}}
+
+/* top container clickable */
+#app-container{position:relative; z-index:10; height:100%; overflow:auto; -webkit-overflow-scrolling:touch; padding:8px;}
+
+/* header */
+.social-bar{background:#000; padding:6px; display:flex; justify-content:center; gap:10px; border-bottom:1px solid #333; position:relative; z-index:20;}
+.social-btn{color:white; text-decoration:none; font-size:11px; font-weight:700; background:#333; padding:6px 10px; border-radius:8px;}
+.header{ text-align:center; padding:6px; }
+.main-title{font-family:'Rye', cursive; font-size:28px; color:var(--gold); margin:0; text-shadow:0 0 12px rgba(184,134,11,0.6);}
+
+/* pay header */
+.pay-header{background:linear-gradient(180deg,#d32f2f,#990000); border:3px solid var(--gold); border-radius:50px; padding:10px 18px; margin:8px auto; max-width:360px; cursor:pointer; display:flex; flex-direction:column; align-items:center; z-index:20;}
+.pay-lbl{color:var(--gold); font-size:11px; font-weight:700; letter-spacing:1px;}
+.pay-num{font-family:'Orbitron', monospace; font-size:24px; font-weight:900; color:white;}
+
+/* layout */
+.layout{display:flex; gap:12px; padding:8px; max-width:1200px; margin:8px auto; box-sizing:border-box;}
+.left-panel{flex:2; min-width:300px; background:rgba(0,20,40,0.85); border:2px solid var(--cyan); border-radius:14px; display:flex; flex-direction:column; min-height:520px;}
+.right-panel{flex:1; min-width:280px; display:flex; flex-direction:column; gap:10px;}
+
+/* info strip */
+.info-strip{padding:10px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--cyan); color:var(--gold); font-weight:700;}
+
+/* grid */
+.grid-scroll{flex:1; overflow:auto; padding:8px;}
+.grid{display:grid; gap:6px; grid-template-columns: repeat(auto-fill, minmax(75px,1fr));}
+
+/* card */
+.card{background:rgba(0,50,80,0.6); border:1px solid #005580; border-radius:8px; padding:6px; display:flex; flex-direction:column; align-items:center; cursor:pointer; user-select:none; position:relative;}
+.card .card-num{font-family:'Rye'; font-size:22px; color:#88aacc;}
+.card .card-name{font-size:11px; color:var(--cyan); margin-top:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;}
+.card.active{border-color:var(--cyan); box-shadow:0 0 8px rgba(0,255,255,0.06); background:rgba(0,80,120,0.7);}
+.slots{display:flex; gap:4px; margin-top:6px;}
+.slot{width:8px; height:8px; border-radius:50%; background:#000; border:1px solid #444;}
+.slot.on{background:radial-gradient(circle,#fff,var(--gold)); border-color:#fff; box-shadow:0 0 6px var(--gold); transform:scale(1.3);}
+
+/* winner/dead */
+.card.winner{background:linear-gradient(135deg,gold,orange); border:2px solid #fff; color:#111; animation:flash 0.6s infinite;}
+@keyframes flash{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+.card.dead{filter:grayscale(100%); opacity:0.6; border-color:#333;}
+
+/* jackpot, ball */
+.jackpot-box{background:rgba(0,0,0,0.8); border:2px solid var(--gold); border-radius:10px; padding:12px; text-align:center;}
+.jackpot-lbl{color:var(--cyan); font-weight:800; font-size:12px;}
+.jackpot-val{font-family:'Orbitron', monospace; font-size:36px; font-weight:900; color:var(--gold); margin-top:6px;}
+
+.ball-zone{height:140px; background:rgba(0,0,0,0.5); border:1px solid #ff1493; border-radius:18px; display:flex; justify-content:center; align-items:center;}
+.ball{width:120px; height:120px; border-radius:50%; background:var(--pink-ball); border:3px solid #fff; display:flex; justify-content:center; align-items:center; font-size:48px; font-weight:900; color:#fff; box-shadow:0 8px 28px rgba(0,0,0,0.6);}
+.ball.pulse{animation:pulse 0.9s ease-in-out;}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)}}
+
+/* controls */
+.controls{display:flex; gap:8px; flex-direction:column;}
+.btn{width:100%; padding:12px; border-radius:26px; border:none; font-weight:900; cursor:pointer;}
+.btn-go{background:linear-gradient(180deg,#00c6ff,#0072ff); color:#002;}
+.btn-stop{background:linear-gradient(180deg,#ff4d4d,#b30000); color:#fff; display:none;}
+.btn-opt{background:#222; color:#ddd; border:1px solid #444;}
+.btn-new{background:#333; color:#fff;}
+
+/* modal */
+.modal-layer{display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; align-items:flex-start; justify-content:center; padding-top:28px;}
+.modal-layer.active{display:flex;}
+.modal-box{background:#001a33; border:3px solid var(--gold); padding:18px; width:92%; max-width:420px; border-radius:12px; text-align:center; pointer-events:auto;}
+.big-input{width:100%; padding:10px; margin-bottom:10px; font-size:16px; border-radius:8px; border:1px solid var(--gold); background:#000; color:#fff;}
+.pay-row{display:flex; justify-content:space-between; background:#111; padding:10px; border-radius:8px; border:1px solid #333; margin-bottom:8px;}
+
+/* audit grid inside modal */
+#audit-content{display:grid; gap:6px; grid-template-columns:repeat(5,1fr);}
+
+/* fireworks canvas */
+#fireworks{position:fixed; left:0; top:0; width:100%; height:100%; pointer-events:none; z-index:20000;}
+
+/* small styles */
+.prize-row{display:flex; gap:6px; margin-bottom:6px;}
+.prize-inp{flex:1; padding:8px; background:#0b0f13; border-radius:6px; border:1px solid #333; color:#fff;}
+.winners{max-height:160px; overflow:auto; font-size:14px; padding:6px; background:rgba(0,0,0,0.35); border-radius:8px;}
+.footer{font-size:12px; color:#9fb0c7; text-align:center; margin-top:8px;}
+</style>
+</head>
+<body>
+<div id="app-wrapper">
+  <canvas id="fireworks"></canvas>
+  <div id="coins-layer" aria-hidden="true"></div>
+
+  <!-- Modals -->
+  <div id="modal-reg" class="modal-layer" aria-hidden="true">
+    <div class="modal-box" role="dialog" aria-modal="true">
+      <h2 style="color:var(--gold); margin:0 0 8px 0;">FICHA #<span id="reg-id">-</span></h2>
+      <input id="reg-name" class="big-input" placeholder="Nombre" />
+      <input id="reg-tel" class="big-input" placeholder="Celular" />
+      <div style="margin:8px 0;">
+        <label><input id="reg-paid" type="checkbox" /> <b style="color:#0f0;">PAGADO</b></label>
+      </div>
+      <div style="display:flex; gap:8px; justify-content:center;">
+        <button id="reg-save" class="btn btn-go">GUARDAR</button>
+        <button id="reg-cancel" class="btn btn-opt">CANCELAR</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-pay" class="modal-layer" aria-hidden="true">
+    <div class="modal-box">
+      <h2 style="color:var(--cyan); margin:0 0 8px 0;">CUENTAS</h2>
+      <div class="pay-row"><div><strong style="color:var(--gold)">YAPE / DALE</strong><br><small style="color:#ccc">María Cusicah</small></div><div style="font-weight:900">905 888 379</div></div>
+      <div class="pay-row"><div><strong style="color:var(--gold)">PLIN</strong><br><small style="color:#ccc">María Cusicah</small></div><div style="font-weight:900">977 192 218</div></div>
+      <div style="display:flex; gap:8px; justify-content:center;"><button id="pay-close" class="btn btn-opt">CERRAR</button></div>
+    </div>
+  </div>
+
+  <div id="modal-audit" class="modal-layer" aria-hidden="true">
+    <div class="modal-box" style="max-width:900px;">
+      <h3 style="color:var(--gold); margin:0 0 8px 0;">CONTEO</h3>
+      <div id="audit-content" style="max-height:360px; overflow:auto; padding:6px;"></div>
+      <div style="display:flex; gap:6px; justify-content:center; margin-top:8px;"><button id="audit-close" class="btn btn-opt">CERRAR</button></div>
+    </div>
+  </div>
+
+  <!-- App -->
+  <div id="app-container">
+    <div class="social-bar">
+      <a class="social-btn" href="https://bingoasteriaperu.online" target="_blank">WEB</a>
+      <a class="social-btn" href="https://www.facebook.com/BingoDaleAsteria" target="_blank">FB</a>
+      <a class="social-btn" href="https://wa.me/51977192218" target="_blank">WA</a>
+      <a class="social-btn" href="https://www.facebook.com/share/g/1b2DxRGp5y/" target="_blank">GRUPO</a>
+    </div>
+
+    <div class="header">
+      <div class="main-title">✨ BINGO ASTERIA ✨</div>
+      <div id="pay-button" class="pay-header" role="button" tabindex="0" aria-pressed="false">
+        <div class="pay-lbl">YAPE - PLIN - DALE</div>
+        <div class="pay-num">905 888 379</div>
+        <div style="font-size:10px; margin-top:6px;">CLIC PARA PAGAR</div>
+      </div>
+
+      <div style="display:flex; gap:8px; justify-content:center; margin-top:8px;">
+        <div><span style="font-size:11px; color:var(--cyan);">ESTRELLA:</span> <input type="text" value="S/ 5.00" class="big-input" id="cfg-star" style="width:140px;" /></div>
+        <div><span style="font-size:11px; color:var(--cyan);">FICHAS:</span> <input type="number" id="cfg-total" value="50" class="big-input" style="width:110px;" /></div>
+        <div><button id="reload-btn" class="btn btn-opt" style="height:42px;">↻</button></div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="left-panel">
+        <div class="info-strip"><span>🎯 META: 5 MONEDAS</span><span>JUGADORES: <b id="player-count">0</b></span></div>
+        <div class="grid-scroll"><div id="grid" class="grid" role="grid" aria-label="Tablero"></div></div>
+      </div>
+
+      <div class="right-panel">
+        <div class="jackpot-box">
+          <div class="jackpot-lbl">JUGANDO POR:</div>
+          <div id="prize-display" class="jackpot-val">S/ 100.00</div>
+        </div>
+
+        <div class="ball-zone">
+          <div class="ball" id="ball-val" aria-live="polite">--</div>
+        </div>
+
+        <div id="status-msg" class="info-strip" style="background:transparent; border:none; color:#39ff14; font-weight:700;">LISTO PARA JUGAR</div>
+
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button id="btn-speed" class="btn btn-opt">🐢 VELOCIDAD: NORMAL</button>
+          <div style="display:flex; gap:8px;">
+            <button id="btn-start" class="btn btn-go">GIRAR BOLA</button>
+            <button id="btn-stop" class="btn btn-stop">PAUSAR</button>
+          </div>
+          <button id="btn-new" class="btn btn-new">NUEVO JUEGO</button>
+          <button id="toggle-prizes" class="btn btn-opt">⚙️ CONFIGURAR PREMIOS</button>
+          <div id="config-prizes" style="display:none; margin-top:8px;">
+            <div id="prizes-list-container"></div>
+            <div style="display:flex; gap:6px; margin-top:6px;">
+              <button id="add-prize" class="btn btn-opt" style="flex:1;">+ AÑADIR PREMIO</button>
+              <button id="save-prizes" class="btn btn-go" style="flex:1;">GUARDAR</button>
+            </div>
+          </div>
+          <button id="show-audit" class="btn btn-opt">📜 VER CONTEO</button>
+        </div>
+
+        <div style="margin-top:8px;">
+          <div style="font-weight:800; color:var(--cyan); margin-bottom:6px;">HISTORIAL GANADORES</div>
+          <div id="winners" class="winners"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">Bingo Asteria Perú • Listo para Wix • Contacto: 905 888 379</div>
+  </div>
+</div>
+
+<script>
+/* ===========================
+   Estado
+   =========================== */
+let totalNums = 50;
+let players = {};
+let counts = {};
+let winners = [];
+let prizes = ["S/ 100", "S/ 50", "S/ 20"];
+let running = false;
+let timer = null;
+let speed = 4000;
+let editId = null;
+let autoResumeTimer = null;
+
+/* ===========================
+   Helpers
+   =========================== */
+function $(id){ return document.getElementById(id); }
+function safeCall(fn){ try{ fn(); }catch(e){ console.warn('safeCall error', e); }}
+
+/* ===========================
+   Coins background creation
+   =========================== */
+function initCoins(){
+  const container = $('coins-layer');
+  if(!container) return;
+  container.innerHTML = '';
+  const values = ["500","2000","3000","4000"];
+  for(let i=0;i<18;i++){
+    const coin = document.createElement('div'); coin.className='coin';
+    const size = 36 + Math.random()*60;
+    coin.style.width = size+'px'; coin.style.height = size+'px';
+    coin.style.left = (Math.random()*90)+'%';
+    coin.style.top = (Math.random()*100)+'%';
+    const dur = 10 + Math.random()*10;
+    coin.style.animationDuration = dur + 's';
+    coin.style.animationDelay = '-' + (Math.random()*10) + 's';
+    const val = values[Math.floor(Math.random()*values.length)];
+    coin.innerHTML = `<div style="text-align:center;"><div class="coin-val" style="font-size:${Math.max(10, size/3.5)}px">${val}</div><div class="coin-sol">SOLES</div></div>`;
+    container.appendChild(coin);
+  }
+}
+
+/* ===========================
+   Init / Render grid
+   =========================== */
+function initGame(resetPlayers=false){
+  // pick value safely
+  const cfg = parseInt($('cfg-total') ? $('cfg-total').value : totalNums) || totalNums;
+  totalNums = Math.max(1, cfg);
+  // prepare players and counts
+  if(resetPlayers || Object.keys(players).length===0){
+    players = {}; for(let i=1;i<=totalNums;i++) players[i] = {name:'', tel:'', paid:false};
+  } else {
+    for(let i=1;i<=totalNums;i++) if(!players[i]) players[i] = {name:'', tel:'', paid:false};
+  }
+  if(Object.keys(counts).length===0){ for(let i=1;i<=totalNums;i++) counts[i]=0; }
+  else { for(let i=1;i<=totalNums;i++) if(counts[i]===undefined) counts[i]=0; }
+
+  const grid = $('grid'); if(!grid) return;
+  grid.innerHTML = '';
+  for(let i=1;i<=totalNums;i++){
+    const c = document.createElement('div'); c.className='card'; c.id='c-'+i; c.tabIndex=0;
+    c.addEventListener('click', ()=> openReg(i));
+    c.addEventListener('keydown', (ev)=> { if(ev.key==='Enter' || ev.key===' ') openReg(i); });
+    const num = document.createElement('div'); num.className='card-num'; num.textContent = i;
+    const name = document.createElement('div'); name.className='card-name'; name.textContent = players[i].name || 'DISPONIBLE';
+    const slots = document.createElement('div'); slots.className='slots';
+    for(let k=1;k<=5;k++){ const s=document.createElement('div'); s.className='slot'; s.id=`s-${i}-${k}`; slots.appendChild(s); }
+    c.appendChild(num); c.appendChild(name); c.appendChild(slots);
+    grid.appendChild(c);
+    renderCard(i);
+  }
+  updateCount();
+  renderPrizesList();
+  updateBigDisplay();
+  if($('coins-layer') && $('coins-layer').children.length === 0) initCoins();
+}
+
+/* render single card by id */
+function renderCard(i){
+  const card = $('c-'+i);
+  if(!card) return;
+  const p = players[i] || {};
+  if(p.name && p.name.trim() !== '') card.classList.add('active'); else card.classList.remove('active');
+  card.querySelector('.card-name').textContent = p.name || 'DISPONIBLE';
+  for(let k=1;k<=5;k++){
+    const s = $('s-'+i+'-'+k); if(!s) continue;
+    if(counts[i] >= k) s.classList.add('on'); else s.classList.remove('on');
+  }
+  if(counts[i] >= 5){ card.classList.add('winner'); } else card.classList.remove('winner');
+}
+
+/* ===========================
+   Prizes
+   =========================== */
+function renderPrizesList(){
+  const cont = $('prizes-list-container');
+  if(!cont) return;
+  cont.innerHTML = '';
+  prizes.forEach((p,i)=>{
+    const row = document.createElement('div'); row.className='prize-row';
+    const inp = document.createElement('input'); inp.className='prize-inp'; inp.value = p;
+    inp.addEventListener('change', ()=> { prizes[i] = inp.value; updateBigDisplay(); });
+    const btn = document.createElement('button'); btn.className='btn btn-opt'; btn.textContent='X';
+    btn.addEventListener('click', ()=> { prizes.splice(i,1); renderPrizesList(); updateBigDisplay(); });
+    row.appendChild(inp); row.appendChild(btn);
+    cont.appendChild(row);
+  });
+}
+function addPrize(){ prizes.push("S/ 0.00"); renderPrizesList(); updateBigDisplay(); }
+function updateBigDisplay(){
+  const idx = winners.length;
+  if(idx < prizes.length){ $('prize-display').textContent = prizes[idx]; $('prize-display').style.color = ''; }
+  else { $('prize-display').textContent = 'FIN'; $('prize-display').style.color = '#ff3333'; }
+}
+
+/* ===========================
+   Count / Audit
+   =========================== */
+function showAudit(){
+  const content = $('audit-content'); if(!content) return;
+  content.innerHTML = '';
+  for(let i=1;i<=totalNums;i++){
+    const full = counts[i] >= 5;
+    const el = document.createElement('div'); el.style.padding='8px'; el.style.borderRadius='6px'; el.style.textAlign='center'; el.style.background = full? '#012a02':'#041026'; el.style.color = full? '#9fffa8':'#ddd';
+    el.innerHTML = `<small>#${i}</small><br><b>${counts[i] || 0}</b>`;
+    content.appendChild(el);
+  }
+  openModal('modal-audit');
+}
+
+/* ===========================
+   Play / Draw
+   =========================== */
+function toggleSpeed(){
+  const btn = $('btn-speed');
+  if(speed === 4000){ speed = 2000; if(btn) btn.textContent = '🚀 VELOCIDAD: TURBO'; }
+  else { speed = 4000; if(btn) btn.textContent = '🐢 VELOCIDAD: NORMAL'; }
+  if(running){ clearInterval(timer); timer = setInterval(draw, speed); }
+}
+
+function togglePlay(){
+  if(running) stopPlay(); else startPlay();
+}
+function startPlay(){
+  if(running) return;
+  running = true; $('btn-start').style.display='none'; $('btn-stop').style.display='inline-block'; $('status-msg').textContent='JUGANDO...';
+  draw(); timer = setInterval(draw, speed);
+}
+function stopPlay(){
+  if(!running) return;
+  running = false; clearInterval(timer); timer = null; clearTimeout(autoResumeTimer); autoResumeTimer = null;
+  $('btn-start').style.display='inline-block'; $('btn-stop').style.display='none'; $('status-msg').textContent='PAUSADO';
+}
+
+function draw(){
+  safeCall(()=>{
+    if('speechSynthesis' in window) try{ window.speechSynthesis.cancel(); }catch(e){}
+    if(winners.length >= prizes.length && prizes.length > 0){ stopPlay(); alert('¡Juego Terminado!'); return; }
+    const available = [];
+    for(let i=1;i<=totalNums;i++){ if(counts[i] < 5 && !winners.includes(i)) available.push(i); }
+    if(available.length === 0){ stopPlay(); alert('Fin de números'); return; }
+    // ball pulse
+    const ball = $('ball-val'); if(ball){ ball.classList.add('pulse'); setTimeout(()=>ball.classList.remove('pulse'), 700); }
+    const n = available[Math.floor(Math.random()*available.length)];
+    if(ball) ball.innerText = n;
+    speak((speed<3000)? n.toString() : 'Número ' + n);
+    counts[n] = (counts[n] || 0) + 1;
+    const slot = $('s-'+n+'-'+counts[n]); if(slot) slot.classList.add('on');
+    renderCard(n);
+    const el = $('c-'+n); if(el && typeof el.scrollIntoView === 'function') el.scrollIntoView({behavior:'smooth', block:'center'});
+    if(counts[n] === 5){
+      clearInterval(timer); timer = null;
+      winners.push(n);
+      renderCard(n);
+      const pr = prizes[winners.length-1] || 'S/ 0.00';
+      addWinnerToHistory(n, pr);
+      fireFireworks();
+      $('status-msg').textContent = `¡GANADOR #${n}!`;
+      // auto-resume logic
+      autoResumeTimer = setTimeout(()=>{
+        if(winners.length < prizes.length){
+          if(el) { el.classList.remove('winner'); el.classList.add('dead'); }
+          updateBigDisplay();
+          $('status-msg').textContent = 'BUSCANDO...';
+          timer = setInterval(draw, speed);
+        } else {
+          $('status-msg').textContent = 'SORTEO FINALIZADO';
+          stopPlay();
+          updateBigDisplay();
+        }
+      }, 6000);
+    }
+  });
+}
+
+/* ===========================
+   Winners
+   =========================== */
+function addWinnerToHistory(id, prize){
+  const w = $('winners');
+  if(!w) return;
+  const name = (players[id] && players[id].name) ? players[id].name : 'Anónimo';
+  const div = document.createElement('div'); div.style.padding='8px'; div.style.borderBottom='1px solid rgba(255,255,255,0.03)';
+  div.innerHTML = `🏆 ${prize} - <b>#${id}</b> ${escapeHtml(name)}`;
+  w.prepend(div);
+  $('player-count') && ($('player-count').textContent = Object.values(players).filter(p=>p.name && p.name.trim()).length);
+}
+
+/* ===========================
+   Register / Players
+   =========================== */
+function openReg(id){
+  editId = id;
+  $('reg-id').textContent = id;
+  const p = players[id] || {name:'', tel:'', paid:false};
+  $('reg-name').value = p.name || '';
+  $('reg-tel').value = p.tel || '';
+  $('reg-paid').checked = !!p.paid;
+  openModal('modal-reg');
+}
+function savePlayer(){
+  if(!editId) return;
+  players[editId] = { name: $('reg-name').value.trim(), tel: $('reg-tel').value.trim(), paid: !!$('reg-paid').checked };
+  renderCard(editId);
+  updateCount();
+  closeModal('modal-reg');
+}
+function cancelRegister(){ closeModal('modal-reg'); }
+
+/* ===========================
+   Count / players list
+   =========================== */
+function updateCount(){
+  const count = Object.values(players).filter(p=>p && p.name && p.name.trim().length).length;
+  if($('player-count')) $('player-count').textContent = count;
+}
+
+/* players list rendering (used inside pay/players modal if needed) */
+function renderPlayersList(){
+  // (simple listing inside modal-pay area if needed or can add separate modal)
+  // not currently used visually; function kept for future
+}
+
+/* ===========================
+   Modal helpers (robust)
+   Accepts both 'modal-pay' or 'pay' as id parameter
+   =========================== */
+function openModal(id){
+  const tryId = (elId)=>{ const el = $(elId); if(el){ el.classList.add('active'); el.setAttribute('aria-hidden','false'); return true;} return false; };
+  if(!tryId(id)) tryId('modal-'+id);
+}
+function closeModal(id){
+  const tryId = (elId)=>{ const el = $(elId); if(el){ el.classList.remove('active'); el.setAttribute('aria-hidden','true'); return true; } return false; };
+  if(!tryId(id)) tryId('modal-'+id);
+}
+
+/* close all modals on Escape */
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ ['modal-reg','modal-pay','modal-audit'].forEach(id=> closeModal(id)); } });
+
+/* add click outside to close modals (each modal-layer) */
+function setupModalBackgroundClose(){
+  document.querySelectorAll('.modal-layer').forEach(layer=>{
+    layer.addEventListener('click', (ev)=>{
+      if(ev.target === layer) { layer.classList.remove('active'); layer.setAttribute('aria-hidden','true'); }
+    });
+  });
+}
+
+/* ===========================
+   Fireworks (simple)
+   =========================== */
+function fireWorkInit(){
+  const canvas = $('fireworks');
+  if(!canvas) return;
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+}
+function fireFireworks(){
+  const canvas = $('fireworks'); if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const particles = [];
+  const cx = Math.random()*canvas.width, cy = Math.random()*canvas.height*0.5;
+  for(let i=0;i<120;i++){
+    particles.push({x:cx, y:cy, vx:(Math.random()-0.5)*8, vy:(Math.random()-0.8)*8, life:40 + Math.floor(Math.random()*40), color:`hsl(${Math.random()*360},80%,60%)`});
+  }
+  canvas.style.display='block';
+  const t = setInterval(()=>{
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(let i=particles.length-1;i>=0;i--){
+      const p = particles[i];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.life--;
+      ctx.fillStyle = p.color; ctx.fillRect(p.x,p.y,3,3);
+      if(p.life<=0) particles.splice(i,1);
+    }
+    if(particles.length===0){ clearInterval(t); setTimeout(()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); canvas.style.display='none'; }, 400); }
+  }, 30);
+}
+
+/* ===========================
+   Utility: escape html
+   =========================== */
+function escapeHtml(str){ if(!str) return ''; return String(str).replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+/* ===========================
+   Speak (safe)
+   =========================== */
+function speak(txt){
+  if(!txt) return;
+  if('speechSynthesis' in window){
+    try{
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(txt);
+      u.lang = 'es-ES';
+      window.speechSynthesis.speak(u);
+    }catch(e){ console.warn('speech err', e); }
+  }
+}
+
+/* ===========================
+   Wire UI events
+   =========================== */
+function bindUI(){
+  // Pay header
+  $('pay-button') && $('pay-button').addEventListener('click', ()=> openModal('modal-pay'));
+  $('pay-button') && $('pay-button').addEventListener('keydown', (e)=>{ if(e.key==='Enter') openModal('modal-pay'); });
+  // modal buttons
+  $('reg-save') && $('reg-save').addEventListener('click', savePlayer);
+  $('reg-cancel') && $('reg-cancel').addEventListener('click', cancelRegister);
+  $('pay-close') && $('pay-close').addEventListener('click', ()=> closeModal('modal-pay'));
+  $('audit-close') && $('audit-close').addEventListener('click', ()=> closeModal('modal-audit'));
+  // actions
+  $('reload-btn') && $('reload-btn').addEventListener('click', ()=> initGame(true));
+  $('btn-speed') && $('btn-speed').addEventListener('click', toggleSpeed);
+  $('btn-start') && $('btn-start').addEventListener('click', ()=> startPlay());
+  $('btn-stop') && $('btn-stop').addEventListener('click', ()=> stopPlay());
+  $('btn-new') && $('btn-new').addEventListener('click', ()=> { if(confirm('¿Reiniciar juego?')) resetGame(); });
+  $('toggle-prizes') && $('toggle-prizes').addEventListener('click', ()=> { const c = $('config-prizes'); if(c) c.style.display = (c.style.display==='none'?'block':'none'); });
+  $('add-prize') && $('add-prize').addEventListener('click', addPrize);
+  $('show-audit') && $('show-audit').addEventListener('click', showAudit);
+  // close modals by clicking background
+  setupModalBackgroundClose();
+  // window resize for canvas
+  window.addEventListener('resize', ()=>{ fireWorkInit(); });
+}
+
+/* ===========================
+   Reset game
+   =========================== */
+function resetGame(){
+  counts = {}; winners = []; $('winners') && ($('winners').innerHTML = '');
+  $('ball-val') && ($('ball-val').innerText = '--');
+  $('status-msg') && ($('status-msg').innerText = 'LISTO PARA JUGAR');
+  for(let i=1;i<=totalNums;i++){ counts[i]=0; renderCard(i); }
+  updateBigDisplay();
+}
+
+/* ===========================
+   Boot
+   =========================== */
+document.addEventListener('DOMContentLoaded', ()=>{
+  safeCall(()=>{ initCoins(); bindUI(); renderPrizesList(); fireWorkInit(); initGame(false); updateBigDisplay(); });
+});
+</script>
+</body>
+</html>
