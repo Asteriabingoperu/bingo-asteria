@@ -1,0 +1,35 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Asteria - Hold and Win</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Iconos de estrellas de FontAwesome -->
+    <link rel="stylesheet" href="cdnjs.cloudflare.com">
+</head>
+<body>
+    <div class="casino-background">
+        <header>
+            <h1>BINGO ASTERIA</h1>
+            <p>¡Gana con nuestra función Pile of Gold!</p>
+        </header>
+
+        <div class="game-container">
+            <div id="bingo-board" class="bingo-grid">
+                <!-- Las celdas del bingo se generarán aquí con JavaScript -->
+            </div>
+            
+            <div class="controls">
+                <button id="call-number-btn" class="play-button">Girar Bola</button>
+                <div class="last-number-display">
+                    Último Número: <span id="last-called-number">--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
