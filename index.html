@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bingo Asteria - ULTRA GOLD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Rye&family=Orbitron:wght@900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --gold: #FFD700;
+            --cyan: #00ffff;
+            --deep-bg: #020510;
+            --glass: rgba(0, 20, 40, 0.85);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: var(--deep-bg);
+            font-family: 'Montserrat', sans-serif;
+            color: white;
+            overflow: hidden; 
+        }
+
+        /* --- 1. FONDO DE MONEDAS --- */
+        #background-fx {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; 
+            background: radial-gradient(circle at 50% 30%, #002b4d 0%, #000000 90%);
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .coin {
+            position: absolute;
+            width: 70px; height: 70px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #FFD700 50%, #B8860B 55%, #D3D3D3 56%, #808080 100%);
+            border: 1px solid #666;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            box-shadow: 0 0 20px rgba(0,0,0,0.6);
+            opacity: 0.6;
+            bottom: -80px;
+            animation: floatUp linear infinite;
+        }
+        
+        .coin-val { font-family: 'Rye'; font-weight: 900; font-size: 16px; color: #3e2723; line-height: 1; }
+        .coin-sol { font-size: 9px; font-weight: bold; color: #000; margin-top: -2px; }
+
+        .c1 { left: 10%; animation-duration: 8s; animation-delay: 0s; }
+        .c2 { left: 30%; animation-duration: 12s; animation-delay: -5s; }
+        .c3 { left: 50%; animation-duration: 10s; animation-delay: -2s; }
+        .c4 { left: 70%; animation-duration: 15s; animation-delay: -8s; }
+        .c5 { left: 90%; animation-duration: 9s; animation-delay: -1s; }
+        .c6 { left: 20%; animation-duration: 11s; animation-delay: -3s; }
+        .c7 { left: 60%; animation-duration: 13s; animation-delay: -6s; }
+        .c8 { left: 80%; animation-duration: 14s; animation-delay: -4s; }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-120vh) rotate(360deg); }
+        }
+
+        /* --- 2. INTERFAZ --- */
+        #app-container {
+            position: relative; z-index: 10;
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch;
+            padding: 5px;
+        }
+
+        .pay-header {
+            background: linear-gradient(180deg, #d32f2f, #990000);
+            border: 3px solid var(--gold); border-radius: 50px;
+            padding: 10px 25px; margin: 5px auto; width: 95%; max-width: 350px;
+            display: flex; flex-direction: column; align-items: center;
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.6);
+            cursor: pointer; animation: pulse 2s infinite;
+            position: relative; z-index: 20;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+        .pay-num { font-family: 'Orbitron'; font-size: 26px; font-weight: 900; color: white; text-shadow: 2px 2px 0 #000; }
+        .pay-lbl { color: var(--gold); font-size: 10px; font-weight: bold; letter-spacing: 2px; }
+
+        header { text-align: center; padding: 5px; flex-shrink: 0; }
+        .main-title { font-family: 'Rye', cursive; font-size: 32px; margin: 0; color: var(--gold); text-shadow: 0 0 15px #b8860b; }
+
+        .config-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 5px; }
+        .inp-cfg { width: 60px; background: rgba(0,0,0,0.8); border: 1px solid var(--cyan); color: white; text-align: center; font-weight: bold; border-radius: 5px; padding: 5px; }
+        .btn-reload { background: var(--gold); border: none; border-radius: 5px; font-weight: bold; cursor: pointer; padding: 5px 10px; font-size: 16px; color: black; }
+
+        .layout { display: flex; flex-wrap: wrap; padding: 5px; gap: 10px; max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        
+        .left-panel { 
+            flex: 2; display: flex; flex-direction: column; min-width: 300px; height: 500px;
+            background: var(--glass);
+            border: 2px solid var(--cyan); border-radius: 15px; 
+            backdrop-filter: blur(3px);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .right-panel { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 8px; }
+
+        .info-strip { padding: 10px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--cyan); font-size: 12px; color: var(--gold); font-weight: bold; }
+        .grid-scroll { flex: 1; overflow-y: auto; padding: 5px; }
+        
+        .grid-scroll::-webkit-scrollbar { width: 10px; }
+        .grid-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); }
+        .grid-scroll::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 5px; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 5px; }
+
+        /* FICHAS */
+        .card { 
+            background: rgba(0, 50, 80, 0.6); 
+            border: 1px solid #005580; border-radius: 6px; padding: 3px; 
+            display: flex; flex-direction: column; align-items: center; cursor: pointer; 
+            position: relative; z-index: 15; 
+            transition: background 0.3s;
+        }
+        .card:active { background: var(--gold); transform: scale(0.95); }
+        .card.active { border-color: var(--cyan); box-shadow: 0 0 5px var(--cyan); background: rgba(0, 80, 120, 0.7); }
+        .card-num { font-family: 'Rye'; font-size: 24px; color: #88aacc; margin-top: 2px; }
+        .card.active .card-num { color: white; text-shadow: 0 0 5px var(--cyan); }
+        .card-name { font-size: 9px; color: var(--cyan); background: rgba(0,0,0,0.5); width: 100%; text-align: center; border-radius: 3px; }
+
+        /* ESTILO DEL GANADOR CORREGIDO: AMARILLO TOTAL */
+        .card.winner { 
+            background: #FFD700 !important; /* Amarillo puro */
+            background: linear-gradient(135deg, #FFD700, #FFC107) !important; 
+            border: 3px solid white !important; 
+            box-shadow: 0 0 20px #FFD700 !important;
+            opacity: 1 !important;
+            transform: scale(1.05);
+            z-index: 100;
+        }
+        /* Texto negro para que se lea bien sobre amarillo */
+        .card.winner .card-num { color: black !important; text-shadow: none; font-weight: 900; }
+        .card.winner .card-name { color: black !important; background: rgba(255,255,255,0.3); font-weight: bold; }
+        .card.winner .slot { border-color: black; background: black; }
+
+        .slots { display: flex; gap: 2px; }
+        .slot { width: 8px; height: 8px; border-radius: 50%; background: #000; border: 1px solid #555; }
+        .slot.on { background: radial-gradient(circle, #fff, var(--gold)); border-color: #fff; box-shadow: 0 0 5px var(--gold); transform: scale(1.3); }
+
+        .jackpot-box { background: rgba(0,0,0,0.8); border: 2px solid var(--gold); border-radius: 10px; padding: 10px; text-align: center; }
+        .jackpot-lbl { color: var(--cyan); font-size: 10px; font-weight: bold; letter-spacing: 2px; }
+        .jackpot-val { font-family: 'Orbitron'; font-size: 40px; font-weight: 900; color: var(--gold); text-shadow: 2px 2px 0 #000; }
+
+        .ball-zone { 
+            height: 140px; background: rgba(0,0,0,0.5); border: 1px solid #ff1493; border-radius: 20px; 
+            display: flex; justify-content: center; align-items: center; margin-top: 5px; 
+            box-shadow: inset 0 0 20px #000;
+        }
+        .ball { 
+            width: 120px; height: 120px; border-radius: 50%; 
+            background: radial-gradient(circle at 35% 35%, #ffffff 0%, #ff69b4 20%, #ff1493 50%, #8b008b 100%);
+            border: none; display: flex; justify-content: center; align-items: center; 
+            font-size: 55px; font-weight: 900; color: white; 
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+        }
+
+        .status-msg { text-align: center; background: #000; color: #39ff14; font-size: 12px; font-weight: bold; padding: 8px; border-radius: 5px; border: 1px solid #333; }
+
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 25px; font-weight: 900; font-size: 14px; cursor: pointer; color: white; margin-bottom: 5px; position: relative; z-index: 20; }
+        .btn-go { background: linear-gradient(180deg, #00c6ff, #0072ff); }
+        .btn-stop { background: linear-gradient(180deg, #ff3333, #b30000); display: none; }
+        .btn-opt { background: #333; border: 1px solid #555; color: #ccc; font-size: 11px; padding: 8px; }
+        .btn-new { background: #444; border: 1px solid #777; }
+        .btn-copy { background: var(--gold); color: black; font-weight: bold; }
+
+        .modal-layer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; align-items: flex-start; justify-content: center; padding-top: 30px; }
+        .modal-layer.active { display: flex; }
+        .modal-box { background: #001a33; border: 3px solid var(--gold); padding: 20px; width: 90%; max-width: 350px; border-radius: 15px; text-align: center; box-shadow: 0 0 50px var(--gold); }
+        
+        .big-input { width: 100%; padding: 10px; margin-bottom: 10px; text-align: center; font-size: 18px; background: #000; border: 1px solid var(--gold); color: white; }
+        .pay-row { display: flex; justify-content: space-between; padding: 10px; background: #111; margin-bottom: 5px; border-radius: 5px; border: 1px solid #333; }
+
+        #config-prizes { display: none; background: rgba(0,0,0,0.95); padding: 10px; border-radius: 10px; border: 1px solid #555; position: absolute; z-index: 100; width: 90%; left: 5%; }
+        #config-prizes.show { display: block; }
+        .prize-row { display: flex; gap: 5px; margin-bottom: 5px; }
+        .prize-inp { width: 100%; background: #222; border: 1px solid #555; color: white; text-align: center; }
+
+        #fireworks { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 20000; }
+        
+        .social-bar { background: #000; padding: 5px; display: flex; justify-content: center; gap: 10px; border-bottom: 1px solid #333; }
+        .social-btn { color: white; font-size: 10px; font-weight: bold; background: #333; padding: 4px 10px; border-radius: 10px; cursor: pointer; user-select: none; }
+        .social-btn:hover { background: #555; }
+        .social-btn:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+
+    <canvas id="fireworks"></canvas>
+    
+    <div id="background-fx">
+        <div class="coin c1"><div class="coin-val">500</div><div class="coin-sol">SOLES</div></div>
+        <div class="coin c2"><div class="coin-val">2000</div><div class="coin-sol">SOLES</div></div>
+        <div class="coin c3"><div class="coin-val">3000</div><div class="coin-sol">SOLES</div></div>
+        <div class="coin c4"><div class="coin-val">4000</div><div class="coin-sol">SOLES</div></div>
+        <div class="coin c5"><div class="coin-val">500</div><div class="coin-sol">SOLES</div></div>
+        <div class="coin c6"><div class="coin-val">1000</div><div class="coin-sol">SOLES</div></div>
+        <div class="coin c7"><div class="coin-val">500</div><div class="coin-sol">SOLES</div></div>
+        <div class="coin c8"><div class="coin-val">2000</div><div class="coin-sol">SOLES</div></div>
+    </div>
+
+    <div id="modal-links" class="modal-layer">
+        <div class="modal-box" style="border-color: #fff;">
+            <h3 id="link-title" style="color:var(--gold); margin-top:0;">ENLACE</h3>
+            <p style="font-size:12px; color:#ccc;">Copia el enlace para abrirlo:</p>
+            <input type="text" id="link-url" class="big-input" readonly value="">
+            <button onclick="copyLink()" class="btn btn-copy" id="btn-copy-txt">COPIAR ENLACE</button>
+            <button onclick="closeModal('links')" class="btn btn-opt">CERRAR</button>
+        </div>
+    </div>
+
+    <div id="modal-reg" class="modal-layer">
+        <div class="modal-box">
+            <h2 style="color:var(--gold); margin-top:0;">FICHA #<span id="reg-id"></span></h2>
+            <input type="text" id="reg-name" class="big-input" placeholder="Nombre">
+            <input type="tel" id="reg-tel" class="big-input" placeholder="Celular">
+            <div style="margin-bottom:15px; font-size:18px;">
+                <input type="checkbox" id="reg-paid" style="transform: scale(1.5);"> <b style="color:#0f0;">PAGADO</b>
+            </div>
+            <button onclick="savePlayer()" class="btn btn-go">GUARDAR</button>
+            <button onclick="closeModal('reg')" class="btn btn-opt">CANCELAR</button>
+        </div>
+    </div>
+
+    <div id="modal-pay" class="modal-layer">
+        <div class="modal-box" style="border-color:var(--cyan);">
+            <h2 style="color:var(--cyan);">CUENTAS</h2>
+            <div class="pay-row">
+                <div style="text-align:left;"><strong style="color:var(--gold)">YAPE / DALE</strong><br><small style="color:#ccc">María Cusicah</small></div>
+                <div style="font-size:20px; font-weight:bold;">905 888 379</div>
+            </div>
+            <div class="pay-row">
+                <div style="text-align:left;"><strong style="color:var(--gold)">PLIN</strong><br><small style="color:#ccc">María Cusicah</small></div>
+                <div style="font-size:20px; font-weight:bold;">977 192 218</div>
+            </div>
+            <button onclick="closeModal('pay')" class="btn btn-opt">CERRAR</button>
+        </div>
+    </div>
+
+    <div id="modal-audit" class="modal-layer">
+        <div class="modal-box">
+            <h3 style="color:white;">CONTEO</h3>
+            <div id="audit-content" style="max-height:300px; overflow-y:auto; display:grid; grid-template-columns:repeat(5,1fr); gap:5px; text-align:center;"></div>
+            <button onclick="closeModal('audit')" class="btn btn-opt" style="margin-top:10px;">CERRAR</button>
+        </div>
+    </div>
+
+    <div id="app-container">
+        
+        <div class="social-bar">
+            <span onclick="openLinkModal('WEB', 'https://bingoasteriaperu.online')" class="social-btn">WEB</span>
+            <span onclick="openLinkModal('FACEBOOK', 'https://www.facebook.com/BingoDaleAsteria')" class="social-btn">FB</span>
+            <span onclick="openLinkModal('WHATSAPP', 'https://wa.me/51977192218')" class="social-btn">WA</span>
+            <span onclick="openLinkModal('GRUPO', 'https://www.facebook.com/share/g/1b2DxRGp5y/')" class="social-btn">GRUPO</span>
+        </div>
+
+        <header>
+            <div class="main-title">✨ BINGO ASTERIA ✨</div>
+            
+            <div onclick="openModal('pay')" class="pay-header">
+                <div class="pay-lbl">YAPE - PLIN - DALE</div>
+                <div class="pay-num">905 888 379</div>
+                <div style="color:white; font-size:9px;">CLIC PARA PAGAR</div>
+            </div>
+
+            <div class="config-bar">
+                <div><span style="font-size:10px; color:var(--cyan);">ESTRELLA:</span> <input type="text" value="S/ 5.00" class="inp-cfg"></div>
+                <div>
+                    <span style="font-size:10px; color:var(--cyan);">FICHAS:</span> 
+                    <input type="number" id="cfg-total" value="50" class="inp-cfg">
+                    <button onclick="initGame(false)" class="btn-reload">↻</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="layout">
+            <div class="left-panel">
+                <div class="info-strip">
+                    <span>🎯 META: 5 MONEDAS</span>
+                    <span>JUGADORES: <span id="player-count" style="color:white;">0</span></span>
+                </div>
+                <div class="grid-scroll">
+                    <div class="grid" id="grid"></div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="jackpot-box">
+                    <div class="jackpot-lbl" id="prize-lbl">JUGANDO POR:</div>
+                    <div id="prize-display" class="jackpot-val">S/ 100.00</div>
+                </div>
+
+                <div class="ball-zone">
+                    <div class="ball" id="ball-val">--</div>
+                </div>
+                
+                <div id="status-msg" class="status-msg">LISTO PARA JUGAR</div>
+
+                <div>
+                    <button id="btn-speed" class="btn btn-opt" onclick="toggleSpeed()">🐢 VELOCIDAD: NORMAL</button>
+                    <button id="btn-start" class="btn btn-go" onclick="togglePlay()">GIRAR BOLA</button>
+                    <button id="btn-stop" class="btn btn-stop" onclick="togglePlay()">PAUSAR</button>
+                    <button onclick="resetGame()" class="btn btn-new">NUEVO JUEGO</button>
+                </div>
+                
+                <button onclick="document.getElementById('config-prizes').classList.toggle('show')" style="background:transparent; border:none; color:#aaa; font-size:10px; cursor:pointer;">⚙️ CONFIGURAR PREMIOS</button>
+                
+                <div id="config-prizes">
+                    <div id="prizes-list-container"></div>
+                    <button onclick="addPrize()" class="btn btn-opt" style="width:100%;">+ AÑADIR PREMIO</button>
+                </div>
+
+                <button onclick="showAudit()" class="btn btn-opt">📜 VER CONTEO</button>
+
+                <div style="background:rgba(0,0,0,0.6); padding:10px; border-radius:10px; border:1px solid var(--gold); margin-top:10px;">
+                    <div style="color:var(--gold); font-size:11px; font-weight:bold; margin-bottom:5px;">HISTORIAL GANADORES</div>
+                    <div id="winners" style="font-size:12px; color:white;"></div>
+                </div>
+            </div>
+        </div>
+        <div style="height:30px;"></div>
+    </div>
+
+    <script>
+        function openLinkModal(title, url){
+            document.getElementById('link-title').innerText = "IR A " + title;
+            document.getElementById('link-url').value = url;
+            document.getElementById('btn-copy-txt').innerText = "COPIAR ENLACE";
+            document.getElementById('btn-copy-txt').style.background = "var(--gold)";
+            openModal('links');
+        }
+
+        function copyLink(){
+            var copyText = document.getElementById("link-url");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); 
+            navigator.clipboard.writeText(copyText.value).then(() => {
+                document.getElementById('btn-copy-txt').innerText = "¡COPIADO!";
+                document.getElementById('btn-copy-txt').style.background = "#39ff14";
+            });
+        }
+
+        let totalNums = 50, players = {}, counts = {}, running = false, timer = null, winners = []; 
+        let speed = 4000;
+        let prizes = ["S/ 100", "S/ 50", "S/ 20"]; 
+        let editId = null;
+        let autoResumeTimer = null;
+
+        function initGame(resetPlayers = false){
+            let val = document.getElementById('cfg-total').value;
+            totalNums = Math.max(1, parseInt(val) || 50);
+            const grid = document.getElementById('grid'); grid.innerHTML = '';
+            
+            if(resetPlayers || Object.keys(players).length === 0){
+                players = {}; for(let i=1; i<=totalNums; i++){ players[i] = {name:'', tel:'', paid:false}; }
+            } else {
+                for(let i=1; i<=totalNums; i++){ if(!players[i]) players[i] = {name:'', tel:'', paid:false}; }
+            }
+
+            if(Object.keys(counts).length === 0) { for(let i=1; i<=totalNums; i++) counts[i] = 0; }
+            else { for(let i=1; i<=totalNums; i++) if(counts[i] === undefined) counts[i] = 0; }
+
+            for(let i=1; i<=totalNums; i++){
+                let c = document.createElement('div'); c.className = 'card'; c.id = 'c-' + i;
+                c.onclick = () => openReg(i);
+                renderCard(c, i);
+                grid.appendChild(c);
+            }
+            updateCount(); renderPrizesList(); updateBigDisplay();
+        }
+
+        function resetGame() {
+            if(!confirm("¿Deseas reiniciar el juego?")) return;
+            clearInterval(timer); clearTimeout(autoResumeTimer); running = false;
+            document.getElementById('btn-start').style.display = 'block';
+            document.getElementById('btn-stop').style.display = 'none';
+            document.getElementById('status-msg').innerText = "LISTO PARA JUGAR";
+            
+            counts = {}; for(let i=1; i<=totalNums; i++) counts[i] = 0;
+            winners = [];
+            document.getElementById('winners').innerHTML = '';
+            document.getElementById('ball-val').innerText = '--';
+            document.querySelectorAll('.slot.on').forEach(el => el.classList.remove('on'));
+            document.querySelectorAll('.card.winner').forEach(el => el.classList.remove('winner'));
+            initGame(false);
+        }
+
+        function renderCard(el, i){
+            let p = players[i], hasName = p.name && p.name.trim() !== '';
+            if(hasName) el.classList.add('active'); else el.classList.remove('active');
+            let nameDisplay = hasName ? p.name : 'DISPONIBLE';
+            let slots = ''; for(let k=1; k<=5; k++) slots += `<div class="slot" id="s-${i}-${k}"></div>`;
+            el.innerHTML = `<div class="card-num">${i}</div><div class="card-name">${nameDisplay}</div><div class="slots">${slots}</div>`;
+            for(let k=1; k<=counts[i]; k++) { setTimeout(() => { if(el.querySelector(`#s-${i}-${k}`)) el.querySelector(`#s-${i}-${k}`).classList.add('on'); }, 10); }
+            if(counts[i] >= 5) {
+                el.classList.add('winner');
+            }
+        }
+
+        function renderPrizesList(){
+            let h = ''; 
+            prizes.forEach((p,i)=> {
+                h += `<div class="prize-row">
+                    <input class="prize-inp" value="${p}" onchange="prizes[${i}]=this.value; updateBigDisplay()">
+                    <button onclick="prizes.splice(${i},1); renderPrizesList(); updateBigDisplay()" style="background:#b00; color:white; border:none;">X</button>
+                </div>`;
+            });
+            document.getElementById('prizes-list-container').innerHTML = h;
+        }
+        function addPrize(){ prizes.push("S/ 0.00"); renderPrizesList(); updateBigDisplay(); }
+        
+        function updateBigDisplay(){
+            let currentIdx = winners.length;
+            if(currentIdx < prizes.length){
+                document.getElementById('prize-display').innerText = prizes[currentIdx];
+                document.getElementById('prize-display').style.color = "var(--gold)";
+            } else {
+                document.getElementById('prize-display').innerText = "FIN";
+                document.getElementById('prize-display').style.color = "#ff3333";
+            }
+        }
+
+        function showAudit(){
+            let content = document.getElementById('audit-content');
+            content.innerHTML = '';
+            for(let i=1; i<=totalNums; i++){
+                let full = counts[i] >= 5;
+                let bg = full ? '#030' : '#222';
+                let col = full ? '#0f0' : '#fff';
+                content.innerHTML += `<div style="background:${bg}; padding:5px; text-align:center; border:1px solid #444; color:${col}"><small>#${i}</small><br><b>${counts[i]}</b></div>`;
+            }
+            document.getElementById('modal-audit').classList.add('active');
+        }
+
+        function toggleSpeed(){
+            let btn = document.getElementById('btn-speed');
+            if(speed === 4000){ speed = 2000; btn.innerText = "🚀 TURBO"; btn.style.color = "gold"; } 
+            else { speed = 4000; btn.innerText = "🐢 NORMAL"; btn.style.color = "white"; }
+            if(running && !autoResumeTimer){ clearInterval(timer); timer = setInterval(draw, speed); }
+        }
+
+        function togglePlay(){
+            if(running){
+                clearInterval(timer); clearTimeout(autoResumeTimer); running = false;
+                document.getElementById('btn-start').style.display = 'block';
+                document.getElementById('btn-stop').style.display = 'none';
+                document.getElementById('status-msg').innerText = "PAUSADO";
+            } else {
+                speak(""); // Desbloqueo audio
+                running = true;
+                document.getElementById('btn-start').style.display = 'none';
+                document.getElementById('btn-stop').style.display = 'block';
+                document.getElementById('status-msg').innerText = "JUGANDO...";
+                draw(); timer = setInterval(draw, speed);
+            }
+        }
+
+        function draw(){
+            if('speechSynthesis' in window) window.speechSynthesis.cancel();
+            
+            if(winners.length >= prizes.length && prizes.length > 0){
+                togglePlay(); alert("¡Juego Terminado!"); return;
+            }
+
+            let ball = document.getElementById('ball-val');
+            ball.style.transform = "scale(1.1)";
+            setTimeout(() => ball.style.transform = "scale(1)", 200);
+
+            let available = [];
+            for(let i=1; i<=totalNums; i++){
+                if(counts[i] < 5 && !winners.includes(i)) available.push(i);
+            }
+            if(available.length === 0){ togglePlay(); alert("Fin de números"); return; }
+
+            let n = available[Math.floor(Math.random() * available.length)];
+            ball.innerText = n; 
+            
+            if(speed < 3000) speak(n.toString()); else speak("Número " + n);
+
+            counts[n]++;
+            let slot = document.getElementById(`s-${n}-${counts[n]}`);
+            if(slot) slot.classList.add('on');
+            let c = document.getElementById('c-'+n);
+            c.scrollIntoView({behavior: "smooth", block: "center"});
+            
+            if(counts[n] === 5){
+                clearInterval(timer); 
+                winners.push(n); 
+                c.classList.add('winner');
+                
+                let name = players[n].name || "Anónimo";
+                let prizeAmount = prizes[winners.length-1];
+
+                document.getElementById('winners').innerHTML += `<div style="border-bottom:1px solid #444; padding:3px;">🏆 ${prizeAmount} - <b>#${n} ${name}</b></div>`;
+                document.getElementById('status-msg').innerText = `¡GANADOR #${n}!`;
+                
+                speak(`¡Atención! Ganador de ${prizeAmount}. Ficha número ${n}, ${name}`);
+                fireFireworks();
+
+                if(winners.length < prizes.length) {
+                    document.getElementById('status-msg').innerHTML += ` (Sigue en 6s)`;
+                    autoResumeTimer = setTimeout(() => {
+                        if(running) { 
+                            updateBigDisplay(); 
+                            // YA NO SE QUITA LA CLASE WINNER, SE QUEDA AMARILLO SIEMPRE
+                            document.getElementById('status-msg').innerText = "BUSCANDO...";
+                            timer = setInterval(draw, speed);
+                        }
+                    }, 6000);
+                } else {
+                    document.getElementById('status-msg').innerText = "SORTEO FINALIZADO";
+                    running = false; 
+                    document.getElementById('btn-start').style.display = 'block';
+                    document.getElementById('btn-stop').style.display = 'none';
+                    updateBigDisplay();
+                }
+            }
+        }
+
+        function speak(txt){ 
+            if('speechSynthesis' in window){ 
+                let msg = new SpeechSynthesisUtterance(txt);
+                msg.lang = 'es-ES'; msg.volume = 1; window.speechSynthesis.speak(msg); 
+            } 
+        }
+
+        function fireFireworks(){
+            const canvas = document.getElementById('fireworks'); const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            let particles = [];
+            for(let i=0; i<300; i++){ particles.push({x:canvas.width/2, y:canvas.height/2, vx:(Math.random()-0.5)*40, vy:(Math.random()-0.5)*40, life:100, color:`hsl(${Math.random()*360},100%,50%)`}); }
+            function loop(){
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                particles.forEach((p,i)=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.5; p.life--; ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,5,5); if(p.life<=0) particles.splice(i,1); });
+                if(particles.length) requestAnimationFrame(loop);
+            } loop();
+        }
+
+        function openReg(id){ editId = id; document.getElementById('reg-id').innerText=id; document.getElementById('reg-name').value=players[id].name; document.getElementById('reg-tel').value=players[id].tel; document.getElementById('reg-paid').checked=players[id].paid; document.getElementById('modal-reg').classList.add('active'); }
+        function savePlayer(){ players[editId].name=document.getElementById('reg-name').value; players[editId].tel=document.getElementById('reg-tel').value; players[editId].paid=document.getElementById('reg-paid').checked; renderCard(document.getElementById('c-'+editId), editId); updateCount(); closeModal('reg'); }
+        function openModal(id){ document.getElementById('modal-'+id).classList.add('active'); }
+        function closeModal(id){ document.getElementById('modal-'+id).classList.remove('active'); }
+        function updateCount(){ document.getElementById('player-count').innerText = Object.values(players).filter(p=>p.name).length; }
+
+        window.onload = function() { initGame(); };
+    </script>
+</body>
+</html>
