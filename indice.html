@@ -725,7 +725,37 @@
         0 0 35px #ff8c00;
     animation: winnerTitle 0.8s infinite alternate;
 }
+.big-spark {
+    position: absolute;
+    border-radius: 50%;
+    z-index: 999999;
+    pointer-events: none;
+    transform-origin: center;
+    filter: brightness(1.5);
+}
+.prize-celebration {
+    position: relative;
+    animation: prizeCelebration 0.5s infinite alternate;
+    box-shadow:
+        0 0 15px #FFD700,
+        0 0 30px #FF00FF,
+        0 0 45px #00FFFF,
+        0 0 60px #FFD700 !important;
+    transform: scale(1.08);
+    border: 3px solid #FFD700 !important;
+}
 
+@keyframes prizeCelebration {
+    from {
+        transform: scale(1.03);
+        filter: brightness(1);
+    }
+
+    to {
+        transform: scale(1.10);
+        filter: brightness(1.6);
+    }
+}
 .winner-live-number {
     margin-top: 18px;
     font-family: 'Orbitron', sans-serif;
@@ -1454,12 +1484,13 @@
         }
 
 
-       function updateBigDisplay() {
+      function updateBigDisplay() {
     updatePrizeBoard();
 }
 
 function updatePrizeBoard() {
     for(let i = 1; i <= 4; i++) {
+
         const prizeElement = document.getElementById('prize-' + i);
 
         if(!prizeElement) continue;
@@ -1477,16 +1508,19 @@ function updatePrizeBoard() {
 
             if(i <= winners.length) {
                 row.classList.add('prize-won');
+
+                if(i === winners.length) {
+                    celebratePrize(row);
+                }
+
             } else if(i === winners.length + 1) {
                 row.classList.add('current-prize');
             }
         }
     }
 }
-        }
-
-
-        function showAudit() {
+        
+function showAudit() {
 
             let content = document.getElementById('audit-content');
 
@@ -1851,6 +1885,14 @@ updatePrizeBoard();
             }
 
         }
+function celebratePrize(row) {
+
+    row.classList.add('prize-celebration');
+
+    setTimeout(() => {
+        row.classList.remove('prize-celebration');
+    }, 5000);
+}
 
 function showWinnerLive(position, number, name, prize) {
     const overlay = document.getElementById('winner-live');
@@ -1877,54 +1919,91 @@ function showWinnerLive(position, number, name, prize) {
 }
 
 function createWinnerSparks() {
+
     const overlay = document.getElementById('winner-live');
 
-    for(let i = 0; i < 70; i++) {
+    // GRAN EXPLOSIÓN DE PICA-PICA
+    for(let i = 0; i < 180; i++) {
+
         const spark = document.createElement('div');
 
-        spark.style.position = 'absolute';
-        spark.style.width = '8px';
-        spark.style.height = '8px';
-        spark.style.borderRadius = '50%';
-        spark.style.background =
-            i % 2 === 0 ? '#FFD700' : '#FFFFFF';
+        spark.className = 'big-spark';
 
-        spark.style.left = (10 + Math.random() * 80) + '%';
-        spark.style.top = (10 + Math.random() * 80) + '%';
+        // Posición inicial alrededor del centro
+        spark.style.left = '50%';
+        spark.style.top = '50%';
 
+        // Colores intensos
+        const colors = [
+            '#FFD700',
+            '#FFFF00',
+            '#FF1744',
+            '#FF00FF',
+            '#00FFFF',
+            '#00FF44',
+            '#FFFFFF',
+            '#FF8C00'
+        ];
+
+        const color = colors[Math.floor(Math.random() * colors.length)];
+
+        spark.style.background = color;
         spark.style.boxShadow =
-            '0 0 10px #FFD700, 0 0 20px #FFD700';
+            `0 0 10px ${color},
+             0 0 25px ${color},
+             0 0 45px ${color}`;
 
-        spark.style.pointerEvents = 'none';
+        // Tamaño gordito
+        const size = 8 + Math.random() * 14;
+
+        spark.style.width = size + 'px';
+        spark.style.height = size + 'px';
 
         overlay.appendChild(spark);
 
+        // Dirección de la explosión
         const angle = Math.random() * Math.PI * 2;
-        const distance = 80 + Math.random() * 220;
+
+        // MUCHO más grande: casi media pantalla
+        const distance =
+            180 + Math.random() * 420;
+
+        const x = Math.cos(angle) * distance;
+        const y = Math.sin(angle) * distance;
+
+        const duration =
+            1000 + Math.random() * 1600;
 
         spark.animate(
             [
                 {
-                    transform: 'translate(0,0) scale(1)',
+                    transform: 'translate(-50%, -50%) scale(1)',
                     opacity: 1
                 },
                 {
                     transform:
-                        `translate(${Math.cos(angle) * distance}px,
-                                   ${Math.sin(angle) * distance}px)
+                        `translate(calc(-50% + ${x}px),
+                                   calc(-50% + ${y}px))
+                         scale(1.4)`,
+                    opacity: 1
+                },
+                {
+                    transform:
+                        `translate(calc(-50% + ${x * 1.12}px),
+                                   calc(-50% + ${y * 1.12}px))
                          scale(0)`,
                     opacity: 0
                 }
             ],
             {
-                duration: 1200 + Math.random() * 1200,
-                easing: 'ease-out'
+                duration: duration,
+                easing: 'cubic-bezier(.1,.7,.2,1)'
             }
         );
 
         setTimeout(() => {
             spark.remove();
-        }, 2500);
+        }, duration + 200);
     }
 }
         function speak(txt) {
@@ -2098,7 +2177,6 @@ function createWinnerSparks() {
                 Object.values(players).filter(p => p.name).length;
 
         }
-
 
         window.onload = function() {
 
