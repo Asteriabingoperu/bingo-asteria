@@ -1200,7 +1200,41 @@
         let speed = 4000;
 
     let prizes = ["S/ 1000", "S/ 500", "S/ 200", "S/ 100"];
+// ===============================
+// HISTORIAL Y CONTABILIDAD
+// ===============================
 
+let bingoHistory = JSON.parse(
+    localStorage.getItem('bingoAsteriaHistory') || '[]'
+);
+
+let currentGame = {
+    id: Date.now(),
+    date: new Date().toLocaleString('es-PE'),
+    winners: [],
+    totalPaid: 0
+};
+
+function saveBingoHistory() {
+    localStorage.setItem(
+        'bingoAsteriaHistory',
+        JSON.stringify(bingoHistory)
+    );
+}
+
+function saveCurrentGame() {
+    const index = bingoHistory.findIndex(
+        game => game.id === currentGame.id
+    );
+
+    if(index >= 0) {
+        bingoHistory[index] = currentGame;
+    } else {
+        bingoHistory.push(currentGame);
+    }
+
+    saveBingoHistory();
+}
         let editId = null;
 
         let autoResumeTimer = null;
