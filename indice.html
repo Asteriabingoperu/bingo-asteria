@@ -1840,7 +1840,36 @@ function showAudit() {
                 let name = players[n].name || "Anónimo";
 
                 let prizeAmount = prizes[winners.length - 1];
+// GUARDAR DATOS COMPLETOS DEL GANADOR
+const now = new Date();
 
+currentGame.winners.push({
+    position: winners.length,
+    number: n,
+    name: players[n].name || "Anónimo",
+    phone: players[n].tel || "",
+    dni: players[n].dni || "",
+    prize: prizeAmount,
+    date: now.toLocaleDateString('es-PE'),
+    time: now.toLocaleTimeString('es-PE'),
+    year: now.getFullYear()
+});
+
+currentGame.totalPaid = currentGame.winners.reduce(
+    (total, winner) => {
+        const amount = parseFloat(
+            String(winner.prize)
+                .replace('S/', '')
+                .replace(/\s/g, '')
+                .replace(',', '.')
+        ) || 0;
+
+        return total + amount;
+    },
+    0
+);
+
+saveCurrentGame();
 
                 /* HISTORIAL PEQUEÑO */
                 document.getElementById('winners').innerHTML += `
