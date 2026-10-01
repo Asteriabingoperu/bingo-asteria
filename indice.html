@@ -1241,7 +1241,16 @@ function saveCurrentGame() {
 
 
         function initGame(resetPlayers = false) {
+// CREAR NUEVO BINGO
+currentGame = {
+    id: Date.now(),
+    date: new Date().toLocaleDateString('es-PE'),
+    time: new Date().toLocaleTimeString('es-PE'),
+    winners: [],
+    totalPaid: 0
+};
 
+winners = [];
             let val = document.getElementById('cfg-total').value;
 
             totalNums = Math.max(1, parseInt(val) || 50);
