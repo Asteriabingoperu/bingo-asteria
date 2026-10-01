@@ -2248,7 +2248,7 @@ function createWinnerSparks() {
             document.getElementById('reg-name').value = players[id].name;
 
             document.getElementById('reg-tel').value = players[id].tel;
-
+            document.getElementById('reg-dni').value = players[id].dni || '';
             document.getElementById('reg-paid').checked = players[id].paid;
 
             document.getElementById('modal-reg').classList.add('active');
